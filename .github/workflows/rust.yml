@@ -57,7 +57,7 @@ jobs:
             - name: Build
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:
-                  command: build
+                  command: cargo build
                   toolchain: stable
                   args: --release
               env:
@@ -67,7 +67,7 @@ jobs:
             - name: Test
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:
-                  command: test
+                  command: cargo test
                   toolchain: stable
                   args: --all-features --no-fail-fast
               env:
