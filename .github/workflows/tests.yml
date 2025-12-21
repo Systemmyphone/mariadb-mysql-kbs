@@ -7,9 +7,6 @@ on:
     pull_request:
     push:
 
-env:
-    NODE_VERSION: '22'
-
 jobs:
     test-node:
         name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
@@ -17,7 +14,7 @@ jobs:
         strategy:
             matrix:
                 # Source: https://endoflife.date/nodejs
-                node_version: ["${{ env.NODE_VERSION }}", "lts/*", "latest"]
+                node_version: ["22", "lts/*", "latest"]
                 os: [ubuntu-latest]
 
         steps:

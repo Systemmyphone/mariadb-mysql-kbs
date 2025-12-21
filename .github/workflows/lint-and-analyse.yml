@@ -15,8 +15,8 @@ on:
             - "**/*.php"
 
 env:
-    NODE_VERSION: '22'
-    PHP_VERSION: '7.2'
+    NODE_VERSION: 22
+    PHP_VERSION: 7.2
 
 jobs:
     lint-node:
