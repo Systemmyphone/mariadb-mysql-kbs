@@ -16,6 +16,7 @@ on:
 
 env:
     NODE_VERSION: 22
+    PHP_VERSION: 7.2
 
 jobs:
     lint-node:
@@ -54,10 +55,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - name: Use php 7.2
+            - name: Use php ${{ env.PHP_VERSION }}
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: 7.2
+                  php-version: ${{ env.PHP_VERSION }}
             - name: Validate composer.json and composer.lock
               run: composer validate
             - name: Cache module
@@ -74,10 +75,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - name: Use php 7.2
+            - name: Use php ${{ env.PHP_VERSION }}
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: 7.2
+                  php-version: ${{ env.PHP_VERSION }}
             - name: Cache module
               uses: actions/cache@v5
               with:
