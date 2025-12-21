@@ -54,6 +54,12 @@ jobs:
                   profile: minimal
                   toolchain: stable
                   default: true
+            - name: Add LLVM tools for coverage
+              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
+              with:
+                  command: rustup
+                  toolchain: stable
+                  args: component add llvm-tools
             - name: Build
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:
