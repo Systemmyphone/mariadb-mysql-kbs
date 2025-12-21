@@ -20,7 +20,7 @@ permissions:
 
 env:
     GRCOV_VERSION: 0.10.5
-    RUST_TOOLCHAIN: toolchain
+    RUST_TOOLCHAIN: stable
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
