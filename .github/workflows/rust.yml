@@ -54,7 +54,6 @@ jobs:
                   profile: minimal
                   toolchain: 1.74
                   default: true
-                  override: true
             - name: Build
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:
