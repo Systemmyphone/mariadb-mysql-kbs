@@ -1,67 +1,244 @@
-<div class="table-contents">
-    <table frame="box" rules="all" summary="Reference for status variables.">
-        <colgroup>
-            <col style="width: 40%">
-            <col style="width: 20%">
-            <col align="center" style="width: 20%">
-        </colgroup>
-        <thead>
-            <tr>
-                <th scope="col">Variable Name</th>
-                <th scope="col">Variable Type</th>
-                <th scope="col">Variable Scope</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row"><a class="link"
-                        href="server-status-variables.html#statvar_Com_xxx">Com_admin_commands</a></th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link" href="server-status-variables.html#statvar_Com_xxx">Com_alter_db</a>
-                </th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link"
-                        href="server-status-variables.html#statvar_Com_xxx">Com_alter_db_upgrade</a></th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link" href="server-status-variables.html#statvar_Com_xxx">Com_alter_event</a>
-                </th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link"
-                        href="server-status-variables.html#statvar_Com_xxx">Com_alter_function</a></th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link"
-                        href="server-status-variables.html#statvar_Com_xxx">Com_alter_procedure</a></th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link" href="server-status-variables.html#statvar_Com_xxx">Com_alter_server</a>
-                </th>
-                <td>Integer</td>
-                <td>Both</td>
-            </tr>
-            <tr>
-                <th scope="row"><a class="link"
-                        href="validate-password-options-variables.html#statvar_validate_password_dictionary_file_words_count">validate_password_dictionary_file_words_count</a>
-                </th>
-                <td>Integer</td>
-                <td>Global</td>
-            </tr>
-        </tbody>
-    </table>
+<div id="docs-main-inner">
+  <div class="right" id="docs-version-nav"></div>
+  <div id="docs-show-nav" class="left hidden" style="margin-right: 15px;"></div>
+  <div id="docs-breadcrumbs"></div>
+  <div id="docs-body">
+
+      <div class="itemizedlist">
+        <ul class="itemizedlist" style="list-style-type: disc; ">
+          <li class="listitem">
+            <p>
+              <a name="statvar_Aborted_clients"></a>
+              <a class="link" href="server-status-variables.html#statvar_Aborted_clients">
+                <code class="literal">Aborted_clients</code>
+              </a>
+            </p>
+            <a class="indexterm" name="id129916"></a>
+            <a class="indexterm" name="id129918"></a>
+            <p> The number of connections that were aborted because the client died without closing the connection properly. See <a class="xref" href="communication-errors.html" title="B.3.2.9&nbsp;Communication Errors and Aborted Connections">Section&nbsp;B.3.2.9, “Communication Errors and Aborted Connections”</a>. </p>
+          </li>
+          <li class="listitem">
+            <p>
+              <a name="statvar_Com_xxx"></a>
+              <code class="literal">Com_ <em class="replaceable">
+                  <code>xxx</code>
+                </em>
+              </code>
+            </p>
+            <p> The <code class="literal">Com_ <em class="replaceable">
+                  <code>xxx</code>
+                </em>
+              </code> statement counter variables indicate the number of times each <em class="replaceable">
+                <code>xxx</code>
+              </em> statement has been executed. There is one status variable for each type of statement. For example, <code class="literal">Com_delete</code> and <code class="literal">Com_update</code> count <a class="link" href="delete.html" title="15.2.2&nbsp;DELETE Statement">
+                <code class="literal">DELETE</code>
+              </a> and <a class="link" href="update.html" title="15.2.17&nbsp;UPDATE Statement">
+                <code class="literal">UPDATE</code>
+              </a> statements, respectively. <code class="literal">Com_delete_multi</code> and <code class="literal">Com_update_multi</code> are similar but apply to <a class="link" href="delete.html" title="15.2.2&nbsp;DELETE Statement">
+                <code class="literal">DELETE</code>
+              </a> and <a class="link" href="update.html" title="15.2.17&nbsp;UPDATE Statement">
+                <code class="literal">UPDATE</code>
+              </a> statements that use multiple-table syntax. </p>
+            <p> All <code class="literal">Com_stmt_ <em class="replaceable">
+                  <code>xxx</code>
+                </em>
+              </code> variables are increased even if a prepared statement argument is unknown or an error occurred during execution. In other words, their values correspond to the number of requests issued, not to the number of requests successfully completed. For example, because status variables are initialized for each server startup and do not persist across restarts, the <code class="literal">Com_restart</code> and <code class="literal">Com_shutdown</code> variables that track <a class="link" href="restart.html" title="15.7.8.8&nbsp;RESTART Statement">
+                <code class="literal">RESTART</code>
+              </a> and <a class="link" href="shutdown.html" title="15.7.8.9&nbsp;SHUTDOWN Statement">
+                <code class="literal">SHUTDOWN</code>
+              </a> statements normally have a value of zero, but can be nonzero if <a class="link" href="restart.html" title="15.7.8.8&nbsp;RESTART Statement">
+                <code class="literal">RESTART</code>
+              </a> or <a class="link" href="shutdown.html" title="15.7.8.9&nbsp;SHUTDOWN Statement">
+                <code class="literal">SHUTDOWN</code>
+              </a> statements were executed but failed. </p>
+            <p> The <code class="literal">Com_stmt_ <em class="replaceable">
+                  <code>xxx</code>
+                </em>
+              </code> status variables are as follows: </p>
+            <div class="itemizedlist">
+              <ul class="itemizedlist" style="list-style-type: circle; ">
+                <li class="listitem">
+                  <p>
+                    <code class="literal">Com_stmt_prepare</code>
+                  </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <code class="literal">Com_stmt_execute</code>
+                  </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <code class="literal">Com_stmt_fetch</code>
+                  </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <code class="literal">Com_stmt_send_long_data</code>
+                  </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <code class="literal">Com_stmt_reset</code>
+                  </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <code class="literal">Com_stmt_close</code>
+                  </p>
+                </li>
+              </ul>
+            </div>
+            <p> Those variables stand for prepared statement commands. Their names refer to the <code class="literal">COM_ <em class="replaceable">
+                  <code>xxx</code>
+                </em>
+              </code> command set used in the network layer. In other words, their values increase whenever prepared statement API calls such as <span class="command">
+                <strong>mysql_stmt_prepare()</strong>
+              </span>, <span class="command">
+                <strong>mysql_stmt_execute()</strong>
+              </span>, and so forth are executed. However, <code class="literal">Com_stmt_prepare</code>, <code class="literal">Com_stmt_execute</code> and <code class="literal">Com_stmt_close</code> also increase for <a class="link" href="prepare.html" title="15.5.1&nbsp;PREPARE Statement">
+                <code class="literal">PREPARE</code>
+              </a>, <a class="link" href="execute.html" title="15.5.2&nbsp;EXECUTE Statement">
+                <code class="literal">EXECUTE</code>
+              </a>, or <a class="link" href="deallocate-prepare.html" title="15.5.3&nbsp;DEALLOCATE PREPARE Statement">
+                <code class="literal">DEALLOCATE PREPARE</code>
+              </a>, respectively. Additionally, the values of the older statement counter variables <code class="literal">Com_prepare_sql</code>, <code class="literal">Com_execute_sql</code>, and <code class="literal">Com_dealloc_sql</code> increase for the <a class="link" href="prepare.html" title="15.5.1&nbsp;PREPARE Statement">
+                <code class="literal">PREPARE</code>
+              </a>, <a class="link" href="execute.html" title="15.5.2&nbsp;EXECUTE Statement">
+                <code class="literal">EXECUTE</code>
+              </a>, and <a class="link" href="deallocate-prepare.html" title="15.5.3&nbsp;DEALLOCATE PREPARE Statement">
+                <code class="literal">DEALLOCATE PREPARE</code>
+              </a> statements. <code class="literal">Com_stmt_fetch</code> stands for the total number of network round-trips issued when fetching from cursors. </p>
+            <p>
+              <code class="literal">Com_stmt_reprepare</code> indicates the number of times statements were automatically reprepared by the server, for example, after metadata changes to tables or views referred to by the statement. A reprepare operation increments <code class="literal">Com_stmt_reprepare</code>, and also <code class="literal">Com_stmt_prepare</code>.
+            </p>
+            <p>
+              <code class="literal">Com_explain_other</code> indicates the number of <a class="link" href="explain.html" title="15.8.2&nbsp;EXPLAIN Statement">
+                <code class="literal">EXPLAIN FOR CONNECTION</code>
+              </a> statements executed. See <a class="xref" href="explain-for-connection.html" title="10.8.4&nbsp;Obtaining Execution Plan Information for a Named Connection">Section&nbsp;10.8.4, “Obtaining Execution Plan Information for a Named Connection”</a>.
+            </p>
+            <p>
+              <code class="literal">Com_change_repl_filter</code> indicates the number of <a class="link" href="change-replication-filter.html" title="15.4.2.2&nbsp;CHANGE REPLICATION FILTER Statement">
+                <code class="literal">CHANGE REPLICATION FILTER</code>
+              </a> statements executed.
+            </p>
+          </li>
+          <li class="listitem">
+            <p>
+              <a name="statvar_Compression"></a>
+              <a class="link" href="server-status-variables.html#statvar_Compression">
+                <code class="literal">Compression</code>
+              </a>
+            </p>
+            <a class="indexterm" name="id130150"></a>
+            <a class="indexterm" name="id130152"></a>
+            <p> Whether the client connection uses compression in the client/server protocol. </p>
+            <p> As of MySQL 8.0.18, this status variable is deprecated; expect it to be removed in a future version of MySQL. See <a class="xref" href="connection-compression-control.html#connection-compression-legacy-configuration" title="Configuring Legacy Connection Compression">Configuring Legacy Connection Compression</a>. </p>
+          </li>
+          <li class="listitem">
+            <p>
+              <a name="statvar_Connection_errors_xxx"></a>
+              <a class="link" href="server-status-variables.html#statvar_Connection_errors_xxx">
+                <code class="literal">Connection_errors_ <em class="replaceable">
+                    <code>xxx</code>
+                  </em>
+                </code>
+              </a>
+            </p>
+            <p> These variables provide information about errors that occur during the client connection process. They are global only and represent error counts aggregated across connections from all hosts. These variables track errors not accounted for by the host cache (see <a class="xref" href="host-cache.html" title="7.1.12.3&nbsp;DNS Lookups and the Host Cache">Section&nbsp;7.1.12.3, “DNS Lookups and the Host Cache”</a>), such as errors that are not associated with TCP connections, occur very early in the connection process (even before an IP address is known), or are not specific to any particular IP address (such as out-of-memory conditions). </p>
+            <div class="itemizedlist">
+              <ul class="itemizedlist" style="list-style-type: circle; ">
+                <li class="listitem">
+                  <p>
+                    <a name="statvar_Connection_errors_accept"></a>
+                    <a class="link" href="server-status-variables.html#statvar_Connection_errors_accept">
+                      <code class="literal">Connection_errors_accept</code>
+                    </a>
+                  </p>
+                  <a class="indexterm" name="id130205"></a>
+                  <a class="indexterm" name="id130207"></a>
+                  <p> The number of errors that occurred during calls to <code class="literal">accept()</code> on the listening port. </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <a name="statvar_Connection_errors_internal"></a>
+                    <a class="link" href="server-status-variables.html#statvar_Connection_errors_internal">
+                      <code class="literal">Connection_errors_internal</code>
+                    </a>
+                  </p>
+                  <a class="indexterm" name="id130216"></a>
+                  <a class="indexterm" name="id130218"></a>
+                  <p> The number of connections refused due to internal errors in the server, such as failure to start a new thread or an out-of-memory condition. </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <a name="statvar_Connection_errors_max_connections"></a>
+                    <a class="link" href="server-status-variables.html#statvar_Connection_errors_max_connections">
+                      <code class="literal">Connection_errors_max_connections</code>
+                    </a>
+                  </p>
+                  <a class="indexterm" name="id130226"></a>
+                  <a class="indexterm" name="id130228"></a>
+                  <p> The number of connections refused because the server <a class="link" href="server-system-variables.html#sysvar_max_connections">
+                      <code class="literal">max_connections</code>
+                    </a> limit was reached. </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <a name="statvar_Connection_errors_peer_address"></a>
+                    <a class="link" href="server-status-variables.html#statvar_Connection_errors_peer_address">
+                      <code class="literal">Connection_errors_peer_address</code>
+                    </a>
+                  </p>
+                  <a class="indexterm" name="id130238"></a>
+                  <a class="indexterm" name="id130240"></a>
+                  <p> The number of errors that occurred while searching for connecting client IP addresses. </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <a name="statvar_Connection_errors_select"></a>
+                    <a class="link" href="server-status-variables.html#statvar_Connection_errors_select">
+                      <code class="literal">Connection_errors_select</code>
+                    </a>
+                  </p>
+                  <a class="indexterm" name="id130248"></a>
+                  <a class="indexterm" name="id130250"></a>
+                  <p> The number of errors that occurred during calls to <code class="literal">select()</code> or <code class="literal">poll()</code> on the listening port. (Failure of this operation does not necessarily means a client connection was rejected.) </p>
+                </li>
+                <li class="listitem">
+                  <p>
+                    <a name="statvar_Connection_errors_tcpwrap"></a>
+                    <a class="link" href="server-status-variables.html#statvar_Connection_errors_tcpwrap">
+                      <code class="literal">Connection_errors_tcpwrap</code>
+                    </a>
+                  </p>
+                  <a class="indexterm" name="id130260"></a>
+                  <a class="indexterm" name="id130262"></a>
+                  <p> The number of connections refused by the <code class="literal">libwrap</code> library. </p>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="listitem">
+            <p>
+              <a name="statvar_Compression_algorithm"></a>
+              <a class="link" href="server-status-variables.html#statvar_Compression_algorithm">
+                <code class="literal">Compression_algorithm</code>
+              </a>
+            </p>
+            <a class="indexterm" name="id130162"></a>
+            <a class="indexterm" name="id130164"></a>
+            <p> The name of the compression algorithm in use for the current connection to the server. The value can be any algorithm permitted in the value of the <a class="link" href="server-system-variables.html#sysvar_protocol_compression_algorithms">
+                <code class="literal">protocol_compression_algorithms</code>
+              </a> system variable. For example, the value is <code class="literal">uncompressed</code> if the connection does not use compression, or <code class="literal">zlib</code> if the connection uses the <code class="literal">zlib</code> algorithm. </p>
+            <p> For more information, see <a class="xref" href="connection-compression-control.html" title="6.2.8&nbsp;Connection Compression Control">Section&nbsp;6.2.8, “Connection Compression Control”</a>. </p>
+            <p> This variable was added in MySQL 8.0.18. </p>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <br>
+  </div>
+  <div id="docs-in-page-nav-container"></div>
+  <div id="docs-body-extra"></div>
 </div>

@@ -212,6 +212,26 @@ fn process_row_to_entry(
     entry
 }
 
+fn process_sublink(li_node: Node) -> KbParsedEntry {
+    let id = match li_node.find(Name("code")).next() {
+        Some(node) => Some(node.text()),
+        None => None,
+    };
+    KbParsedEntry {
+        has_description: false,
+        is_removed: false,
+        cli: None,
+        default: None,
+        dynamic: None,
+        id: id.clone(),
+        name: id,
+        scope: None,
+        r#type: None,
+        valid_values: None,
+        range: None,
+    }
+}
+
 fn process_link(li_node: Node) -> KbParsedEntry {
     KbParsedEntry {
         has_description: false,
@@ -224,10 +244,14 @@ fn process_link(li_node: Node) -> KbParsedEntry {
             None => None,
         },
         name: match li_node.find(Class("link")).next() {
-            Some(node) => Some(match node.text().split("=").next() {
-                Some(data) => data.trim().to_string(),
-                None => node.text().trim().to_string(),
-            }),
+            Some(node) => Some(
+                match node.text().split("=").next() {
+                    Some(data) => data.trim().to_string(),
+                    None => node.text().trim().to_string(),
+                }
+                .replace("\n", "")
+                .replace(" ", ""),
+            ),
             None => None,
         },
         scope: None,
@@ -331,6 +355,22 @@ fn process_table(table_node: Node) -> KbParsedEntry {
     entry
 }
 
+fn filter_sublink(elem: &Node) -> bool {
+    match elem.find(Name("p")).next() {
+        Some(p_elem) => match p_elem.find(Name("code")).next() {
+            Some(code) => {
+                let element_attr = code.attr("class");
+                match element_attr {
+                    Some(val) => val == "literal",
+                    None => false,
+                }
+            }
+            None => false,
+        },
+        None => false,
+    }
+}
+
 fn filter_link(elem: &Node) -> bool {
     if elem.find(Class("table")).count() > 0 {
         return false;
@@ -338,7 +378,22 @@ fn filter_link(elem: &Node) -> bool {
     if elem.find(Class("informaltable")).count() > 0 {
         return false;
     }
-    match elem.find(Class("link")).next() {
+
+    let found_a = match elem.find(Name("p")).next() {
+        Some(p_elem) => match p_elem.find(Name("a")).next() {
+            Some(link) => {
+                let element_attr = link.attr("name");
+                match element_attr {
+                    Some(attr) => attr.starts_with("sysvar_") || attr.starts_with("statvar_"),
+                    None => false,
+                }
+            }
+            None => false,
+        },
+        None => false,
+    };
+
+    let found_link = match elem.find(Class("link")).next() {
         Some(link) => {
             let element_attr = link.attr("href");
             match element_attr {
@@ -347,7 +402,9 @@ fn filter_link(elem: &Node) -> bool {
             }
         }
         None => false,
-    }
+    };
+
+    found_a || found_link
 }
 
 fn filter_summary_table(elem: &Node) -> bool {
@@ -410,7 +467,26 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
                 .filter(|e| match &e.name {
                     Some(name) => name.starts_with("--") == false,
                     None => false,
+                })
+                .filter(|e| match &e.id {
+                    Some(id) => id.contains(".html") == false,
+                    None => false,
                 }),
+        )
+        .chain(
+            &mut document
+                .find(Class("listitem"))
+                .filter(|li_node| filter_link(li_node))
+                .flat_map(|li_node| {
+                    li_node
+                        .find(Class("listitem"))
+                        .filter(|li_node| filter_sublink(li_node))
+                        .map(|li_node| {
+                            println!("{:?}", li_node);
+                            process_sublink(li_node)
+                        })
+                })
+                .filter(|e| e.name.is_some()),
         )
         .chain(
             match &mut document
@@ -1422,7 +1498,7 @@ mod tests {
     fn test_case_10() {
         let entries = extract_mysql_from_text(QueryResponse {
             body: get_test_data("mysql_test_case_10.html"),
-            url: "https://example.com".to_string(),
+            url: "https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html#statvar_Com_xxx".to_string(),
         });
         assert_eq!(
             vec![
@@ -1430,11 +1506,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_admin_commands".to_string()),
+                    id: Some("statvar_Aborted_clients".to_string()),
+                    name: Some("Aborted_clients".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1443,11 +1519,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_alter_db".to_string()),
+                    id: Some("statvar_Compression".to_string()),
+                    name: Some("Compression".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1456,11 +1532,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_alter_db_upgrade".to_string()),
+                    id: Some("statvar_Connection_errors_xxx".to_string()),
+                    name: Some("Connection_errors_xxx".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1469,11 +1545,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_alter_event".to_string()),
+                    id: Some("statvar_Connection_errors_accept".to_string()),
+                    name: Some("Connection_errors_accept".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1482,11 +1558,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_alter_function".to_string()),
+                    id: Some("statvar_Connection_errors_internal".to_string()),
+                    name: Some("Connection_errors_internal".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1495,11 +1571,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_alter_procedure".to_string()),
+                    id: Some("statvar_Connection_errors_max_connections".to_string()),
+                    name: Some("Connection_errors_max_connections".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1508,11 +1584,11 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_Com_xxx".to_string()),
-                    name: Some("Com_alter_server".to_string()),
+                    id: Some("statvar_Connection_errors_peer_address".to_string()),
+                    name: Some("Connection_errors_peer_address".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string(), "session".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
@@ -1521,15 +1597,119 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("statvar_validate_password_dictionary_file_words_count".to_string()),
-                    name: Some("validate_password_dictionary_file_words_count".to_string()),
+                    id: Some("statvar_Connection_errors_select".to_string()),
+                    name: Some("Connection_errors_select".to_string()),
                     range: None,
-                    scope: Some(vec!["global".to_string()]),
-                    r#type: Some("integer".to_string()),
+                    scope: None,
+                    r#type: None,
                     valid_values: None,
                     has_description: false,
                     is_removed: false,
-                }
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("statvar_Connection_errors_tcpwrap".to_string()),
+                    name: Some("Connection_errors_tcpwrap".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("statvar_Compression_algorithm".to_string()),
+                    name: Some("Compression_algorithm".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("Com_stmt_prepare".to_string()),
+                    name: Some("Com_stmt_prepare".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("Com_stmt_execute".to_string()),
+                    name: Some("Com_stmt_execute".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("Com_stmt_fetch".to_string()),
+                    name: Some("Com_stmt_fetch".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("Com_stmt_send_long_data".to_string()),
+                    name: Some("Com_stmt_send_long_data".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("Com_stmt_reset".to_string()),
+                    name: Some("Com_stmt_reset".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
+                KbParsedEntry {
+                    cli: None,
+                    default: None,
+                    dynamic: None,
+                    id: Some("Com_stmt_close".to_string()), // TODO: use xxx for anchor id
+                    name: Some("Com_stmt_close".to_string()),
+                    range: None,
+                    scope: None,
+                    r#type: None,
+                    valid_values: None,
+                    has_description: false,
+                    is_removed: false,
+                },
             ],
             entries
         );
