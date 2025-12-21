@@ -19,41 +19,31 @@ jobs:
             name: sudo-bot
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
+            - uses: actions/checkout@v6
+            - uses: actions/setup-node@v6
               with:
-                  node-version: 20
+                  node-version: 22
             - name: Get yarn cache directory path
               id: yarn-cache-dir-path
               run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
             - name: yarn cache
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
                   key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
                   restore-keys: |
                       ${{ runner.os }}-yarn-
             - name: composer cache module
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: ~/.composer/cache/
                   key: composer-cache
-            - name: Cache cargo binaries
-              uses: actions/cache@v4
-              id: cache-mariadb-mysql-kbs
-              with:
-                  path: ~/.cargo/bin/mariadb-mysql-kbs
-                  key: ${{ runner.os }}-cargo-bin-mariadb-mysql-kbs-${{ env.VERSION }}
-            - name: Set up toolchain
-              if: steps.cache-mariadb-mysql-kbs.outputs.cache-hit != 'true'
-              uses: actions-rs/toolchain@v1
-              with:
-                  profile: minimal
-                  toolchain: 1.74
-                  override: true
             - name: Install mariadb-mysql-kbs (${{ env.VERSION }})
               if: steps.cache-mariadb-mysql-kbs.outputs.cache-hit != 'true'
-              run: cargo install mariadb-mysql-kbs@${{ env.VERSION }}
+              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
+              with:
+                  command: cargo install
+                  args: mariadb-mysql-kbs@${{ env.VERSION }}
             - name: Install
               run: |
                   yarn install

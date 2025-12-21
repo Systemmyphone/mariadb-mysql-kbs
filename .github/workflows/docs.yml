@@ -15,7 +15,7 @@ jobs:
             url: https://williamdes.github.io/mariadb-mysql-kbs/
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
               with:
                   # To also fetch the gh-pages branch
                   fetch-depth: 0
@@ -25,14 +25,14 @@ jobs:
                   config-file: ./scripts/doctum-config.php
                   method: "update"
                   cli-args: "--output-format=github --no-ansi --no-progress -v --force"
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v6
               with:
-                  node-version: 20
+                  node-version: 22
             - name: Get yarn cache directory path
               id: yarn-cache-dir-path
               run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
             - name: yarn cache
-              uses: actions/cache@v4
+              uses: actions/cache@v5
               with:
                   path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
                   key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
