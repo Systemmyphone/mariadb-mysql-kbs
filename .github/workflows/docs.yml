@@ -8,6 +8,9 @@ on:
         types: run-build-docs
     workflow_dispatch:
 
+env:
+    NODE_VERSION: 22
+
 jobs:
     run-sudo-bot-build-docs:
         environment:
@@ -27,7 +30,7 @@ jobs:
                   cli-args: "--output-format=github --no-ansi --no-progress -v --force"
             - uses: actions/setup-node@v6
               with:
-                  node-version: 22
+                  node-version: ${{ env.NODE_VERSION }}
             - name: Get yarn cache directory path
               id: yarn-cache-dir-path
               run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
