@@ -52,13 +52,13 @@ jobs:
               with:
                   command: install-rustup
                   profile: minimal
-                  toolchain: 1.74
+                  toolchain: stable
                   default: true
             - name: Build
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:
                   command: build
-                  toolchain: 1.74
+                  toolchain: stable
                   args: --release
               env:
                   CARGO_INCREMENTAL: "0"
@@ -68,7 +68,7 @@ jobs:
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:
                   command: test
-                  toolchain: 1.74
+                  toolchain: stable
                   args: --all-features --no-fail-fast
               env:
                   CARGO_INCREMENTAL: "0"
