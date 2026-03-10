@@ -134,7 +134,9 @@ mod tests {
     fn get_test_data(file_name: &str) -> String {
         let test_dir = env::current_dir().unwrap();
         fs::read_to_string(test_dir.to_str().unwrap().to_owned() + "/src/rust/data/" + file_name)
-            .expect("Should have been able to read the test data file")
+            .expect(
+                format!("Should have been able to read the test data file: {file_name}").as_str(),
+            )
     }
 
     #[test]
