@@ -212,8 +212,8 @@ fn process_row_to_entry(
     entry
 }
 
-fn process_sublink(li_node: Node) -> KbParsedEntry {
-    let id = match li_node.find(Name("code")).next() {
+fn process_sublink(li_node: Node, parent_anchor: Option<String>) -> KbParsedEntry {
+    let name = match li_node.find(Name("code")).next() {
         Some(node) => Some(node.text()),
         None => None,
     };
@@ -223,8 +223,8 @@ fn process_sublink(li_node: Node) -> KbParsedEntry {
         cli: None,
         default: None,
         dynamic: None,
-        id: id.clone(),
-        name: id,
+        id: parent_anchor.or_else(|| name.clone()),
+        name,
         scope: None,
         r#type: None,
         valid_values: None,
@@ -478,12 +478,29 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
                 .find(Class("listitem"))
                 .filter(|li_node| filter_link(li_node))
                 .flat_map(|li_node| {
+                    let parent_anchor: Option<String> = li_node
+                        .find(Name("p"))
+                        .next()
+                        .and_then(|p_node| {
+                            p_node.find(Name("a")).find(|a| {
+                                a.attr("name").map_or(false, |n| {
+                                    n.starts_with("statvar_") || n.starts_with("sysvar_")
+                                })
+                            })
+                        })
+                        .and_then(|a| a.attr("name").map(|s| s.to_string()))
+                        .or_else(|| {
+                            li_node
+                                .find(Class("link"))
+                                .next()
+                                .map(|n| link_to_archor(n))
+                        });
                     li_node
                         .find(Class("listitem"))
                         .filter(|li_node| filter_sublink(li_node))
-                        .map(|li_node| {
+                        .map(move |li_node| {
                             println!("{:?}", li_node);
-                            process_sublink(li_node)
+                            process_sublink(li_node, parent_anchor.clone())
                         })
                 })
                 .filter(|e| e.name.is_some()),
@@ -1636,7 +1653,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("Com_stmt_prepare".to_string()),
+                    id: Some("statvar_Com_xxx".to_string()),
                     name: Some("Com_stmt_prepare".to_string()),
                     range: None,
                     scope: None,
@@ -1649,7 +1666,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("Com_stmt_execute".to_string()),
+                    id: Some("statvar_Com_xxx".to_string()),
                     name: Some("Com_stmt_execute".to_string()),
                     range: None,
                     scope: None,
@@ -1662,7 +1679,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("Com_stmt_fetch".to_string()),
+                    id: Some("statvar_Com_xxx".to_string()),
                     name: Some("Com_stmt_fetch".to_string()),
                     range: None,
                     scope: None,
@@ -1675,7 +1692,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("Com_stmt_send_long_data".to_string()),
+                    id: Some("statvar_Com_xxx".to_string()),
                     name: Some("Com_stmt_send_long_data".to_string()),
                     range: None,
                     scope: None,
@@ -1688,7 +1705,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("Com_stmt_reset".to_string()),
+                    id: Some("statvar_Com_xxx".to_string()),
                     name: Some("Com_stmt_reset".to_string()),
                     range: None,
                     scope: None,
@@ -1701,7 +1718,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    id: Some("Com_stmt_close".to_string()), // TODO: use xxx for anchor id
+                    id: Some("statvar_Com_xxx".to_string()),
                     name: Some("Com_stmt_close".to_string()),
                     range: None,
                     scope: None,
