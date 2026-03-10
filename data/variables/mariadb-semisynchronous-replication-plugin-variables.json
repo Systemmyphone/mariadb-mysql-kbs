@@ -1,5 +1,5 @@
 {
   "data": [],
   "name": "semisynchronous-replication-plugin-variables",
-  "url": "https://mariadb.com/kb/en/library/documentation/semisynchronous-replication-plugin/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/standard-replication/semisynchronous-replication"
 }

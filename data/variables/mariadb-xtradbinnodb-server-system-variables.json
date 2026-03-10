@@ -97,6 +97,17 @@
       "type": "boolean"
     },
     {
+      "cli": "--innodb-adaptive-hash-index-cells=#",
+      "default": "134217728",
+      "dynamic": true,
+      "id": "innodb_adaptive_hash_index_cells",
+      "name": "innodb_adaptive_hash_index_cells",
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
       "cli": "innodb-adaptive-hash-index-partitions=#",
       "default": "1",
       "dynamic": false,
@@ -128,7 +139,7 @@
     },
     {
       "cli": "--innodb-adaptive-max-sleep-delay=#",
-      "default": "0 (>= MariaDB 10.5.5), 150000 (<= MariaDB 10.5.4)",
+      "default": "0 (>= MariaDB 10.5.5)150000 (<= MariaDB 10.5.4)",
       "dynamic": true,
       "id": "innodb_adaptive_max_sleep_delay",
       "name": "innodb_adaptive_max_sleep_delay",
@@ -340,7 +351,7 @@
     },
     {
       "cli": "--innodb-buffer-pool-chunk-size=#",
-      "default": "autosize (0), resulting in innodb_buffer_pool_size/64, if large_pages round down to multiple of largest page size, with 1MiB minimum (>= MariaDB 10.8.1), 134217728 (<= MariaDB 10.8.0)",
+      "default": "autosize (0), resulting in innodb_buffer_pool_size/64, if large_pages round down to multiple of largest page size, with 1MiB minimum (from MariaDB 10.8.1)134217728 (until MariaDB 10.8.0)",
       "dynamic": false,
       "id": "innodb_buffer_pool_chunk_size",
       "name": "innodb_buffer_pool_chunk_size",
@@ -417,7 +428,7 @@
     },
     {
       "cli": "--innodb-buffer-pool-instances=#",
-      "default": ">= MariaDB 10.0.4:  8, 1 (>= MariaDB 10.2.2 if innodb_buffer_pool_size < 1GB), or dependent on innodb_buffer_pool_size (Windows 32-bit)",
+      "default": ">= MariaDB 10.0.4: 8, 1 (>= MariaDB 10.2.2 if innodb_buffer_pool_size < 1GB), or dependent on innodb_buffer_pool_size (Windows 32-bit)",
       "dynamic": false,
       "id": "innodb_buffer_pool_instances",
       "name": "innodb_buffer_pool_instances",
@@ -534,6 +545,36 @@
       "type": "integer"
     },
     {
+      "cli": "--innodb-buffer-pool-size-auto-min=#",
+      "default": "134217728",
+      "dynamic": true,
+      "id": "innodb_buffer_pool_size_auto_min",
+      "name": "innodb_buffer_pool_size_auto_min",
+      "range": {
+        "from": 0,
+        "to": 18446744073701163008
+      },
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
+      "cli": "--innodb-buffer-pool-size-max=#",
+      "default": "specified by the initial value of innodb_buffer_pool_size, rounded up to the block size of that variable. See the section about buffer pool changes in MariaDB 10.11.12, 11.4.6, and 11.8.2.",
+      "dynamic": false,
+      "id": "innodb_buffer_pool_size_max",
+      "name": "innodb_buffer_pool_size_max",
+      "range": {
+        "from": 0,
+        "to": 18446744073701163008
+      },
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
       "default": "OFF",
       "dynamic": false,
       "id": "innodb_change_buffer_dump",
@@ -560,7 +601,7 @@
     },
     {
       "cli": "--innodb-change-buffering=#",
-      "default": ">= MariaDB 10.5.15, MariaDB 10.6.7, MariaDB 10.7.3, MariaDB 10.8.2: none, <= MariaDB 10.5.14, MariaDB 10.6.6, MariaDB 10.7.2, MariaDB 10.8.1:all",
+      "default": "= MariaDB 10.5.15, MariaDB 10.6.7, MariaDB 10.7.3, MariaDB 10.8.2: none<= MariaDB 10.5.14, MariaDB 10.6.6, MariaDB 10.7.2, MariaDB 10.8.1:all",
       "dynamic": true,
       "id": "innodb_change_buffering",
       "name": "innodb_change_buffering",
@@ -609,7 +650,7 @@
     },
     {
       "cli": "--innodb-checksum-algorithm=#",
-      "default": "full_crc32 (>= MariaDB 10.5.0), crc32 (>= MariaDB 10.2.2 to <= MariaDB 10.4), innodb (<= MariaDB 10.2.1)",
+      "default": "full_crc32 (>= MariaDB 10.5.0)crc32 (>= MariaDB 10.2.2 to <= MariaDB 10.4)innodb (<= MariaDB 10.2.1)",
       "dynamic": true,
       "id": "innodb_checksum_algorithm",
       "name": "innodb_checksum_algorithm",
@@ -770,7 +811,7 @@
     },
     {
       "cli": "--innodb-concurrency-tickets=#",
-      "default": "0 (>= MariaDB 10.5.5), 5000 (<= MariaDB 10.5.4)",
+      "default": "0 (>= MariaDB 10.5.5)5000 (<= MariaDB 10.5.4)",
       "dynamic": true,
       "id": "innodb_concurrency_tickets",
       "name": "innodb_concurrency_tickets",
@@ -785,7 +826,7 @@
     },
     {
       "cli": "innodb-corrupt-table-action=value",
-      "default": "assert (<= MariaDB 10.1), deprecated (<= MariaDB 10.2.6)",
+      "default": "assert (<= MariaDB 10.1)deprecated (<= MariaDB 10.2.6)",
       "dynamic": true,
       "id": "innodb_corrupt_table_action",
       "name": "innodb_corrupt_table_action",
@@ -1045,7 +1086,12 @@
       "scope": [
         "global"
       ],
-      "type": "boolean"
+      "type": "boolean",
+      "validValues": [
+        "OFF",
+        "ON",
+        "fast"
+      ]
     },
     {
       "cli": "innodb-doublewrite-file=filename",
@@ -1353,25 +1399,14 @@
     },
     {
       "cli": "--innodb-flush-method=name",
-      "default": "O_DIRECT (Unix, >= MariaDB 10.6.0), fsync (Unix, >= MariaDB 10.3.7, <= MariaDB 10.5), Not set (<= MariaDB 10.3.6)",
+      "default": "O_DIRECT (Unix, >= MariaDB 10.6.0)fsync (only in MariaDB < 10.5)",
       "dynamic": false,
       "id": "innodb_flush_method",
       "name": "innodb_flush_method",
       "scope": [
         "global"
       ],
-      "type": "enumeration",
-      "validValues": [
-        "fsync",
-        "O_DSYNC",
-        "littlesync",
-        "nosync",
-        "O_DIRECT",
-        "O_DIRECT_NO_FSYNC",
-        "unbuffered",
-        "async_unbuffered",
-        "normal"
-      ]
+      "type": "enumeration"
     },
     {
       "cli": "innodb-flush-neighbor-pages=value",
@@ -1410,7 +1445,7 @@
     },
     {
       "cli": "--innodb-flush-sync={0|1}",
-      "default": ": ON",
+      "default": "ON",
       "dynamic": true,
       "id": "innodb_flush_sync",
       "name": "innodb_flush_sync",
@@ -1552,7 +1587,7 @@
       "id": "innodb_ft_min_token_size",
       "name": "innodb_ft_min_token_size",
       "range": {
-        "from": 0,
+        "from": 1,
         "to": 16
       },
       "scope": [
@@ -1638,6 +1673,7 @@
       "id": "innodb_ft_user_stopword_table",
       "name": "innodb_ft_user_stopword_table",
       "scope": [
+        "global",
         "session"
       ],
       "type": "string"
@@ -1726,7 +1762,7 @@
     },
     {
       "cli": "--innodb-instant-alter-column-allowed=value",
-      "default": "<= MariaDB 10.3: add_last, >= MariaDB 10.4: add_drop_reorder",
+      "default": "<= MariaDB 10.3: add_last= MariaDB 10.4: add_drop_reorder",
       "dynamic": true,
       "id": "innodb_instant_alter_column_allowed",
       "name": "innodb_instant_alter_column_allowed",
@@ -1761,7 +1797,7 @@
       "name": "innodb_io_capacity",
       "range": {
         "from": 100,
-        "to": 18446744073709551615
+        "to": 4294967295
       },
       "scope": [
         "global"
@@ -1776,7 +1812,7 @@
       "name": "innodb_io_capacity_max",
       "range": {
         "from": 100,
-        "to": 18446744073709551615
+        "to": 4294967295
       },
       "scope": [
         "global"
@@ -1893,14 +1929,10 @@
       "type": "integer"
     },
     {
-      "cli": "--innodb-log-archive={0|1}",
       "default": "OFF",
       "dynamic": true,
       "id": "innodb_log_archive",
       "name": "innodb_log_archive",
-      "scope": [
-        "global"
-      ],
       "type": "boolean"
     },
     {
@@ -1930,8 +1962,19 @@
       "type": "integer"
     },
     {
+      "cli": "--innodb-log-checkpoint{=1|0}",
+      "default": "OFF",
+      "dynamic": true,
+      "id": "innodb_log_checkpoint_now",
+      "name": "innodb_log_checkpoint_now",
+      "scope": [
+        "global"
+      ],
+      "type": "boolean"
+    },
+    {
       "cli": "innodb-log-checksum-algorithm=value",
-      "default": "deprecated (>= MariaDB 10.2.6), innodb (<= MariaDB 10.1)",
+      "default": "deprecated (>= MariaDB 10.2.6)innodb (<= MariaDB 10.1)",
       "dynamic": true,
       "id": "innodb_log_checksum_algorithm",
       "name": "innodb_log_checksum_algorithm",
@@ -2048,7 +2091,7 @@
     },
     {
       "cli": "--innodb-log-optimize-ddl={0|1}",
-      "default": "OFF (>= MariaDB 10.5.1, MariaDB 10.4.16, MariaDB 10.3.26, MariaDB 10.2.35), ON (<= MariaDB 10.5.0, MariaDB 10.4.15, MariaDB 10.3.25, MariaDB 10.2.34)",
+      "default": "OFF (>= MariaDB 10.5.1, MariaDB 10.4.16, MariaDB 10.3.26, MariaDB 10.2.35)ON (<= MariaDB 10.5.0, MariaDB 10.4.15, MariaDB 10.3.25, MariaDB 10.2.34)",
       "dynamic": true,
       "id": "innodb_log_optimize_ddl",
       "name": "innodb_log_optimize_ddl",
@@ -2056,6 +2099,18 @@
         "global"
       ],
       "type": "boolean"
+    },
+    {
+      "default": "0",
+      "id": "innodb_log_recovery_start",
+      "name": "innodb_log_recovery_start",
+      "type": "integer"
+    },
+    {
+      "default": "0",
+      "id": "innodb_log_recovery_target",
+      "name": "innodb_log_recovery_target",
+      "type": "integer"
     },
     {
       "cli": "--innodb-log-spin-wait-delay=#",
@@ -2085,7 +2140,7 @@
     },
     {
       "cli": "--innodb-lru-flush-size=#",
-      "default": "32",
+      "default": "0 (>=MariaDB 10.6.20, MariaDB 10.11.10, MariaDB 11.2.6, MariaDB 11.4.4. MariaDB 11.6.1, MariaDB 11.7.1)32 (<= MariaDB 10.6.19, MariaDB 10.11.9, MariaDB 11.2.5, MariaDB 11.4.3)",
       "dynamic": true,
       "id": "innodb_lru_flush_size",
       "name": "innodb_lru_flush_size",
@@ -2100,7 +2155,7 @@
     },
     {
       "cli": "--innodb-lru-scan-depth=#",
-      "default": "1536 (>= MariaDB 10.5.7), 1024 (<= MariaDB 10.5.6)",
+      "default": "1536 (>= MariaDB 10.5.7)1024 (<= MariaDB 10.5.6)",
       "dynamic": true,
       "id": "innodb_lru_scan_depth",
       "name": "innodb_lru_scan_depth",
@@ -2144,7 +2199,7 @@
     },
     {
       "cli": "--innodb-max-dirty-pages-pct=#",
-      "default": "90.000000 (>= MariaDB 10.5.7), 75.000000 (<= MariaDB 10.5.6)",
+      "default": "90.000000 (>= MariaDB 10.5.7)75.000000 (<= MariaDB 10.5.6)",
       "dynamic": true,
       "id": "innodb_max_dirty_pages_pct",
       "name": "innodb_max_dirty_pages_pct",
@@ -2159,7 +2214,7 @@
     },
     {
       "cli": "--innodb-max-dirty-pages-pct-lwm=#",
-      "default": "0 (>= MariaDB 10.2.1), 0.001 (<= MariaDB 10.2.0)",
+      "default": "0 (>= MariaDB 10.2.1)0.001 (<= MariaDB 10.2.0)",
       "dynamic": true,
       "id": "innodb_max_dirty_pages_pct_lwm",
       "name": "innodb_max_dirty_pages_pct_lwm",
@@ -2446,7 +2501,7 @@
     },
     {
       "cli": "--innodb-purge-batch-size=#",
-      "default": "127 (>= MariaDB 10.6.20, MariaDB 10.11.10, MariaDB 11.2.6, MariaDB 11.4.4, MariaDB 11.6.2), 1000 (>= MariaDB 10.6.16, MariaDB 10.10.7, MariaDB 10.11.6, MariaDB 11.0.4, MariaDB 11.1.3 MariaDB 11.2.2), 300 (<= MariaDB 10.6.15, MariaDB 10.10.6, MariaDB 10.11.5, MariaDB 11.0.3, MariaDB 11.1.2 MariaDB 11.2.1)",
+      "default": "127 (>= MariaDB 10.6.20, MariaDB 10.11.10, MariaDB 11.2.6, MariaDB 11.4.4, MariaDB 11.6.2)1000 (>= MariaDB 10.6.16, MariaDB 10.10.7, MariaDB 10.11.6, MariaDB 11.0.4, MariaDB 11.1.3 MariaDB 11.2.2)300 (<= MariaDB 10.6.15, MariaDB 10.10.6, MariaDB 10.11.5, MariaDB 11.0.3, MariaDB 11.1.2 MariaDB 11.2.1)",
       "dynamic": false,
       "id": "innodb_purge_batch_size",
       "name": "innodb_purge_batch_size",
@@ -2773,8 +2828,8 @@
       "cli": "--innodb-log-spin-wait-delay=#",
       "default": "4 (>= MariaDB 10.3.5), 6 (<= MariaDB 10.3.4)",
       "dynamic": true,
-      "id": "innodb_log_spin_wait_delay",
-      "name": "innodb_log_spin_wait_delay",
+      "id": "innodb_spin_wait_delay",
+      "name": "innodb_spin_wait_delay",
       "range": {
         "from": 0,
         "to": 4294967295
@@ -3044,7 +3099,7 @@
     },
     {
       "cli": "--innodb-thread-sleep-delay=#",
-      "default": "0 (>= MariaDB 10.5.5.), 10000 (<= MariaDB 10.5.4)",
+      "default": "0 (>= MariaDB 10.5.5.)10000 (<= MariaDB 10.5.4)",
       "dynamic": true,
       "id": "innodb_thread_sleep_delay",
       "name": "innodb_thread_sleep_delay",
@@ -3300,5 +3355,5 @@
     }
   ],
   "name": "xtradbinnodb-server-system-variables",
-  "url": "https://mariadb.com/kb/en/innodb-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/innodb/innodb-system-variables"
 }

@@ -14,6 +14,11 @@
       "name": "wsrep_apply_oool"
     },
     {
+      "id": "wsrep_apply_waits",
+      "name": "wsrep_apply_waits",
+      "type": "integer"
+    },
+    {
       "id": "wsrep_apply_window",
       "name": "wsrep_apply_window"
     },
@@ -283,5 +288,5 @@
     }
   ],
   "name": "galera-cluster-status-variables",
-  "url": "https://mariadb.com/kb/en/galera-cluster-status-variables/"
+  "url": "https://mariadb.com/docs/galera-cluster/reference/galera-cluster-status-variables"
 }

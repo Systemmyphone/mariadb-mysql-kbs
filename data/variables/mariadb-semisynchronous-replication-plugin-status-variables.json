@@ -92,5 +92,5 @@
     }
   ],
   "name": "semisynchronous-replication-plugin-status-variables",
-  "url": "https://mariadb.com/kb/en/semisynchronous-replication-plugin-status-variables/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/semisynchronous-replication-plugin-status-variables"
 }

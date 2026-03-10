@@ -594,5 +594,5 @@
     }
   ],
   "name": "tokudb-system-variables",
-  "url": "https://mariadb.com/kb/en/tokudb-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/legacy-storage-engines/tokudb/tokudb-system-variables"
 }

@@ -357,5 +357,5 @@
     }
   ],
   "name": "replication-and-binary-log-status-variables",
-  "url": "https://mariadb.com/kb/en/replication-and-binary-log-status-variables/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/standard-replication/replication-and-binary-log-status-variables"
 }

@@ -186,7 +186,12 @@
       "scope": [
         "global"
       ],
-      "type": "enumeration"
+      "type": "enumeration",
+      "validValues": [
+        "Default",
+        "Amazon",
+        "Huawei"
+      ]
     },
     {
       "cli": "--s3-region=val",
@@ -256,5 +261,5 @@
     }
   ],
   "name": "s3-storage-engine-system-variables",
-  "url": "https://mariadb.com/kb/en/s3-storage-engine-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/s3-storage-engine/s3-storage-engine-system-variables"
 }

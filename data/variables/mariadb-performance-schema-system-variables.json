@@ -626,5 +626,5 @@
     }
   ],
   "name": "performance-schema-system-variables",
-  "url": "https://mariadb.com/kb/en/performance-schema-system-variables/"
+  "url": "https://mariadb.com/docs/server/reference/system-tables/performance-schema/performance-schema-system-variables"
 }

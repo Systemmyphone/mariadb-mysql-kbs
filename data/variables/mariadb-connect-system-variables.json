@@ -25,7 +25,7 @@
     },
     {
       "cli": "--connect-conv-size=#",
-      "default": ">= MariaDB 10.4.8: 1024, <= MariaDB 10.4.7: 8192",
+      "default": "= MariaDB 10.4.8: 1024<= MariaDB 10.4.7: 8192",
       "dynamic": true,
       "id": "connect_conv_size",
       "name": "connect_conv_size",
@@ -239,5 +239,5 @@
     }
   ],
   "name": "connect-system-variables",
-  "url": "https://mariadb.com/kb/en/connect-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/connect/connect-system-variables"
 }

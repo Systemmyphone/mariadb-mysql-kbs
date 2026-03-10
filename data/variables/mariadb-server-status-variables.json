@@ -2308,7 +2308,7 @@
       "type": "integer"
     },
     {
-      "id": "maria_",
+      "id": "maria",
       "name": "Maria_*"
     },
     {
@@ -2847,5 +2847,5 @@
     }
   ],
   "name": "server-status-variables",
-  "url": "https://mariadb.com/kb/en/server-status-variables/"
+  "url": "https://mariadb.com/docs/server/server-management/variables-and-modes/server-status-variables"
 }

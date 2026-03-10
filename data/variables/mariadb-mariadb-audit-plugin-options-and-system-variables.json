@@ -46,6 +46,17 @@
       "type": "string"
     },
     {
+      "cli": "--server-audit-file-buffer-size=#",
+      "default": "0",
+      "dynamic": true,
+      "id": "server_audit_file_buffer_size",
+      "name": "server_audit_file_buffer_size",
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
       "cli": "--server-audit-file-path=value",
       "default": "server_audit.log",
       "dynamic": true,
@@ -175,6 +186,22 @@
       "type": "integer"
     },
     {
+      "cli": "--server-audit-sync-log-file",
+      "default": "OFF",
+      "dynamic": true,
+      "id": "server_audit_sync_log_file",
+      "name": "server_audit_sync_log_file",
+      "scope": [
+        "global"
+      ],
+      "validValues": [
+        "ON",
+        "1",
+        "OFF",
+        "0"
+      ]
+    },
+    {
       "cli": "--server-audit-syslog-facility=value",
       "default": "LOG_USER",
       "dynamic": true,
@@ -244,6 +271,17 @@
       ]
     },
     {
+      "cli": "--server-audit-timestamp-format=value",
+      "default": "%Y%m%d %H:%i:%s",
+      "dynamic": true,
+      "id": "server_audit_timestamp_format",
+      "name": "server_audit_timestamp_format",
+      "scope": [
+        "global"
+      ],
+      "type": "string"
+    },
+    {
       "cli": "--server-audit=val",
       "default": "ON",
       "id": "server_audit",
@@ -258,5 +296,5 @@
     }
   ],
   "name": "mariadb-audit-plugin-options-and-system-variables",
-  "url": "https://mariadb.com/kb/en/mariadb-audit-plugin-options-and-system-variables/"
+  "url": "https://mariadb.com/docs/server/reference/plugins/mariadb-audit-plugin/mariadb-audit-plugin-options-and-system-variables"
 }

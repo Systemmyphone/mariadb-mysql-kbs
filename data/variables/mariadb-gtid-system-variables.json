@@ -135,5 +135,5 @@
     }
   ],
   "name": "gtid-system-variables",
-  "url": "https://mariadb.com/kb/en/gtid/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/standard-replication/gtid"
 }

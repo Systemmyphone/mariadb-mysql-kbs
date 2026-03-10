@@ -1440,11 +1440,11 @@
       "type": "integer"
     },
     {
-      "cli": "--rocksdb-remove-mariabackup-checkpoint={0|1}",
+      "cli": "--rocksdb-remove-mariadb-backup-checkpoint={0|1}",
       "default": "OFF",
       "dynamic": true,
-      "id": "rocksdb_remove_mariabackup_checkpoint",
-      "name": "rocksdb_remove_mariabackup_checkpoint",
+      "id": "rocksdb_remove_mariadb-backup_checkpoint",
+      "name": "rocksdb_remove_mariadb-backup_checkpoint",
       "scope": [
         "global"
       ],
@@ -1975,5 +1975,5 @@
     }
   ],
   "name": "myrocks-system-variables",
-  "url": "https://mariadb.com/kb/en/myrocks-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/myrocks/myrocks-system-variables"
 }

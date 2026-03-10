@@ -92,11 +92,7 @@
       "scope": [
         "global"
       ],
-      "type": "integer",
-      "validValues": [
-        "0",
-        "0-4294967295"
-      ]
+      "type": "integer"
     },
     {
       "cli": "--aria-log-dir-path=value",
@@ -179,7 +175,7 @@
     },
     {
       "cli": "--aria-pagecache-buffer-size=#",
-      "default": "134217720",
+      "default": "134217728",
       "dynamic": false,
       "id": "aria_pagecache_buffer_size",
       "name": "aria_pagecache_buffer_size",
@@ -223,12 +219,27 @@
       "type": "integer"
     },
     {
+      "cli": "--aria-pagecache-segments=#",
+      "default": "1",
+      "dynamic": false,
+      "id": "aria_pagecache_segments",
+      "name": "aria_pagecache_segments",
+      "range": {
+        "from": 1,
+        "to": 128
+      },
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
       "id": "aria_recover",
       "name": "aria_recover"
     },
     {
       "cli": "--aria-recover-options[=#]",
-      "default": "BACKUP,QUICK (>= MariaDB 10.2.4), NORMAL (<= MariaDB 10.2.3)",
+      "default": "BACKUP,QUICK (>= MariaDB 10.2.4)NORMAL (<= MariaDB 10.2.3)",
       "dynamic": true,
       "id": "aria_recover_options",
       "name": "aria_recover_options",
@@ -377,5 +388,5 @@
     }
   ],
   "name": "aria-system-variables",
-  "url": "https://mariadb.com/kb/en/aria-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/aria/aria-system-variables"
 }

@@ -16,6 +16,24 @@
       ]
     },
     {
+      "cli": "--file-key-management-digest=value",
+      "default": "sha1",
+      "dynamic": false,
+      "id": "file_key_management_digest",
+      "name": "file_key_management_digest",
+      "scope": [
+        "global"
+      ],
+      "type": "enumeration",
+      "validValues": [
+        "sha1",
+        "sha224",
+        "sha256",
+        "sha384",
+        "sha512"
+      ]
+    },
+    {
       "cli": "--file-key-management-filekey=value",
       "default": "(empty)",
       "dynamic": false,
@@ -38,6 +56,21 @@
       "type": "string"
     },
     {
+      "cli": "--file-key-management-use-pbkdf2=number",
+      "default": "0",
+      "dynamic": false,
+      "id": "file_key_management_use_pbkdf2",
+      "name": "file_key_management_use_pbkdf2",
+      "scope": [
+        "global"
+      ],
+      "type": "integer",
+      "validValues": [
+        "integers ≥ 0 (reasonable value: 600000 for sha256",
+        "less for sha512)"
+      ]
+    },
+    {
       "cli": "--file-key-management=value",
       "default": "ON",
       "id": "file_key_management",
@@ -52,5 +85,5 @@
     }
   ],
   "name": "file-key-management-encryption-plugin-variables",
-  "url": "https://mariadb.com/kb/en/file-key-management-encryption-plugin/"
+  "url": "https://mariadb.com/docs/server/security/encryption/data-at-rest-encryption/key-management-and-encryption-plugins/file-key-management-encryption-plugin"
 }

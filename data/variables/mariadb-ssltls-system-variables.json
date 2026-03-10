@@ -92,8 +92,19 @@
       "type": "string"
     },
     {
+      "cli": "--ssl-passphrase=val",
+      "default": "None",
+      "dynamic": false,
+      "id": "ssl_passphrase",
+      "name": "ssl_passphrase",
+      "scope": [
+        "global"
+      ],
+      "type": "string"
+    },
+    {
       "cli": "--tls-version=value",
-      "default": "TLSv1.1,TLSv1.2,TLSv1.3 (<= MariaDB 10.4.31, MariaDB 10.5.22, MariaDB 10.6.15, MariaDB 10.11.5, MariaDB 11.0.3), TLSv1.2,TLSv1.3 (>= MariaDB 10.4.32, MariaDB 10.5.23, MariaDB 10.6.16, MariaDB 10.11.6, MariaDB 11.0.4 and all later versions)",
+      "default": "TLSv1.1,TLSv1.2,TLSv1.3 (<= MariaDB 10.6.15, MariaDB 10.11.5, MariaDB 11.0.3)TLSv1.2,TLSv1.3 (>= MariaDB 10.6.16, MariaDB 10.11.6, MariaDB 11.0.4 and later versions)",
       "dynamic": false,
       "id": "tls_version",
       "name": "tls_version",
@@ -120,5 +131,5 @@
     }
   ],
   "name": "ssltls-system-variables",
-  "url": "https://mariadb.com/kb/en/ssltls-system-variables/"
+  "url": "https://mariadb.com/docs/server/security/encryption/data-in-transit-encryption/ssltls-system-variables"
 }

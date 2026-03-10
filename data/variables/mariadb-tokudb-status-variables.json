@@ -852,5 +852,5 @@
     }
   ],
   "name": "tokudb-status-variables",
-  "url": "https://mariadb.com/kb/en/tokudb-status-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/legacy-storage-engines/tokudb/tokudb-status-variables"
 }

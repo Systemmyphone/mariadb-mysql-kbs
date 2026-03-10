@@ -70,8 +70,7 @@
         "ALL",
         "QUORUM",
         "EACH_QUORUM",
-        "LOCAL_QUORUM",
-        "\n"
+        "LOCAL_QUORUM"
       ]
     },
     {
@@ -104,11 +103,10 @@
         "ALL",
         "QUORUM",
         "EACH_QUORUM",
-        "LOCAL_QUORUM",
-        "\n"
+        "LOCAL_QUORUM"
       ]
     }
   ],
   "name": "cassandra-system-variables",
-  "url": "https://mariadb.com/kb/en/cassandra-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/legacy-storage-engines/cassandra/cassandra-system-variables"
 }

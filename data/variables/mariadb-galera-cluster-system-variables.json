@@ -12,6 +12,21 @@
       "type": "string"
     },
     {
+      "cli": "--wsrep-applier-retry-count=value",
+      "default": "0",
+      "dynamic": true,
+      "id": "wsrep_applier_retry_count",
+      "name": "wsrep_applier_retry_count",
+      "range": {
+        "from": 0,
+        "to": 4294967295
+      },
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
       "cli": "--wsrep-auto-increment-control[={0|1}]",
       "default": "ON",
       "dynamic": true,
@@ -302,6 +317,7 @@
       ],
       "type": "enumeration",
       "validValues": [
+        "APPLIER_SKIP_FK_CHECKS_IN_IST",
         "BINLOG_ROW_FORMAT_ONLY",
         "DISALLOW_LOCAL_GTID",
         "REQUIRED_PRIMARY_KEY",
@@ -349,7 +365,6 @@
     },
     {
       "cli": "--wsrep-node-name=value",
-      "default": "The server's hostname.",
       "dynamic": true,
       "id": "wsrep_node_name",
       "name": "wsrep_node_name",
@@ -398,7 +413,8 @@
       "type": "enumeration",
       "validValues": [
         "TOI",
-        "RSU"
+        "RSU",
+        "NBO"
       ]
     },
     {
@@ -509,10 +525,14 @@
       "scope": [
         "global"
       ],
-      "type": "boolean"
+      "type": "boolean",
+      "validValues": [
+        "ON",
+        "OFF"
+      ]
     },
     {
-      "cli": "--wsrep-slave-threads=",
+      "cli": "--wsrep-slave-threads=#",
       "default": "1",
       "dynamic": true,
       "id": "wsrep_slave_threads",
@@ -600,7 +620,7 @@
         "mysqldump",
         "xtrabackup",
         "xtrabackup-v2",
-        "mariabackup"
+        "mariadb-backup"
       ]
     },
     {
@@ -609,6 +629,17 @@
       "dynamic": true,
       "id": "wsrep_sst_receive_address",
       "name": "wsrep_sst_receive_address",
+      "scope": [
+        "global"
+      ],
+      "type": "string"
+    },
+    {
+      "cli": "--wsrep-sst-tmp-dir=value",
+      "default": "Empty",
+      "dynamic": false,
+      "id": "wsrep_sst_tmp_dir",
+      "name": "wsrep_sst_tmp_dir",
       "scope": [
         "global"
       ],
@@ -648,7 +679,7 @@
       "type": "boolean"
     },
     {
-      "cli": "--wsrep-sync-wait=",
+      "cli": "--wsrep-sync-wait=#",
       "default": "0",
       "dynamic": true,
       "id": "wsrep_sync_wait",
@@ -663,7 +694,7 @@
       "type": "integer"
     },
     {
-      "cli": "--wsrep-trx-fragment-size=",
+      "cli": "--wsrep-trx-fragment-size=#",
       "default": "0",
       "dynamic": true,
       "id": "wsrep_trx_fragment_size",
@@ -695,5 +726,5 @@
     }
   ],
   "name": "galera-cluster-system-variables",
-  "url": "https://mariadb.com/kb/en/galera-cluster-system-variables/"
+  "url": "https://mariadb.com/docs/galera-cluster/reference/galera-cluster-system-variables"
 }

@@ -48,7 +48,7 @@
     },
     {
       "cli": "--feedback-url=url",
-      "default": "https://mariadb.org/feedback_plugin/post",
+      "default": "https://feedback.mariadb.org/rest/v1/post",
       "dynamic": false,
       "id": "feedback_url",
       "name": "feedback_url",
@@ -83,5 +83,5 @@
     }
   ],
   "name": "feedback-plugin-variables",
-  "url": "https://mariadb.com/kb/en/feedback-plugin/"
+  "url": "https://mariadb.com/docs/server/reference/plugins/other-plugins/feedback-plugin"
 }

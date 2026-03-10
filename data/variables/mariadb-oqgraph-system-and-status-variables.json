@@ -39,5 +39,5 @@
     }
   ],
   "name": "oqgraph-system-and-status-variables",
-  "url": "https://mariadb.com/kb/en/oqgraph-system-and-status-variables/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/oqgraph-system-and-status-variables"
 }

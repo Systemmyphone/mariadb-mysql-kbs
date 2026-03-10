@@ -78,7 +78,7 @@
     },
     {
       "cli": "--sql-error-log-warnings={0,1}",
-      "default": "OFF",
+      "default": "ON",
       "dynamic": true,
       "id": "sql_error_log_warnings",
       "name": "sql_error_log_warnings",
@@ -100,5 +100,5 @@
     }
   ],
   "name": "sql-error-log-plugin-variables",
-  "url": "https://mariadb.com/kb/en/sql-error-log-system-variables-and-options/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/sql-error-log-system-variables-and-options"
 }

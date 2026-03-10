@@ -142,14 +142,13 @@
         "to": 18446744073709547520
       },
       "scope": [
-        "global",
-        "session"
+        "global"
       ],
       "type": "integer"
     },
     {
       "cli": "--myisam-recover-options[=name]",
-      "default": "BACKUP,QUICK (>= MariaDB 10.2.4), DEFAULT (<= MariaDB 10.2.3), OFF",
+      "default": "BACKUP,QUICK (>= MariaDB 10.2.4)DEFAULT (<= MariaDB 10.2.3)OFF",
       "dynamic": false,
       "id": "myisam_recover_options",
       "name": "myisam_recover_options",
@@ -184,14 +183,10 @@
     },
     {
       "cli": "--myisam-sort-buffer-size=#",
-      "default": "134217720",
+      "default": "134216704",
       "dynamic": true,
       "id": "myisam_sort_buffer_size",
       "name": "myisam_sort_buffer_size",
-      "range": {
-        "from": 4096,
-        "to": 18446744073709547520
-      },
       "scope": [
         "global",
         "session"
@@ -200,7 +195,7 @@
     },
     {
       "cli": "--myisam-stats-method=name",
-      "default": "nulls_equal",
+      "default": "NULLS_UNEQUAL",
       "dynamic": true,
       "id": "myisam_stats_method",
       "name": "myisam_stats_method",
@@ -210,9 +205,9 @@
       ],
       "type": "enumeration",
       "validValues": [
-        "nulls_equal",
-        "nulls_unequal",
-        "nulls_ignored"
+        "NULLS_UNEQUAL",
+        "NULLS_EQUAL",
+        "NULLS_IGNORED"
       ]
     },
     {
@@ -228,5 +223,5 @@
     }
   ],
   "name": "myisam-system-variables",
-  "url": "https://mariadb.com/kb/en/myisam-system-variables/"
+  "url": "https://mariadb.com/docs/server/server-usage/storage-engines/myisam-storage-engine/myisam-system-variables"
 }

@@ -801,6 +801,14 @@
       "type": "integer"
     },
     {
+      "id": "innodb_lsn_archived",
+      "name": "Innodb_lsn_archived",
+      "scope": [
+        "global"
+      ],
+      "type": "integer"
+    },
+    {
       "id": "innodb_master_thread_1_second_loops",
       "name": "Innodb_master_thread_1_second_loops",
       "scope": [
@@ -1411,5 +1419,5 @@
     }
   ],
   "name": "xtradbinnodb-server-status-variables",
-  "url": "https://mariadb.com/kb/en/innodb-status-variables/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/innodb-status-variables"
 }

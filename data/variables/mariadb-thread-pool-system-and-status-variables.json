@@ -71,7 +71,7 @@
     },
     {
       "cli": "thread-pool-max-threads=#",
-      "default": "65536 (>= MariaDB 10.2.4), 1000 (<= MariaDB 10.2.3, >= MariaDB 10.1), 500 (<= MariaDB 10.0)",
+      "default": "65536",
       "dynamic": true,
       "id": "thread_pool_max_threads",
       "name": "thread_pool_max_threads",
@@ -142,7 +142,8 @@
       "id": "thread_pool_size",
       "name": "thread_pool_size",
       "range": {
-        "from": 1
+        "from": 1,
+        "to": 128
       },
       "scope": [
         "global"
@@ -156,6 +157,7 @@
       "id": "thread_pool_stall_limit",
       "name": "thread_pool_stall_limit",
       "range": {
+        "from": 1,
         "to": 4294967295
       },
       "scope": [
@@ -183,5 +185,5 @@
     }
   ],
   "name": "thread-pool-system-and-status-variables",
-  "url": "https://mariadb.com/kb/en/thread-pool-system-status-variables/"
+  "url": "https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/buffers-caches-and-threads/thread-pool/thread-pool-system-status-variables"
 }
