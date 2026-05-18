@@ -71,7 +71,7 @@ pub fn get_html_from_url(agent: Agent, url: &str) -> Result<QueryResponse, Query
 
 fn extract_page(page: PageProcess) {
     let agent: Agent = Agent::config_builder()
-        .timeout_global(Some(Duration::from_secs(5)))
+        .timeout_global(Some(Duration::from_secs(30)))
         .build()
         .into();
     match get_html_from_url(agent, &page.url) {

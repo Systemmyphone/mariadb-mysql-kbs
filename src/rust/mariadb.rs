@@ -1,7 +1,7 @@
 use select::{
     document::Document,
     node::Node,
-    predicate::{Attr, Class, Name},
+    predicate::{Class, Name, Predicate},
 };
 
 use crate::{
@@ -9,168 +9,335 @@ use crate::{
     data::{KbParsedEntry, Page, PageProcess, QueryResponse},
 };
 
-const KB_URL: &str = "https://mariadb.com/kb/en/library/documentation/";
-const STORAGE_ENGINES: [&str; 7] = [
-    "s3-storage-engine",
-    "aria",
-    "myrocks",
-    "cassandra",
-    "galera-cluster",
-    "myisam",
-    "connect",
-];
+// MariaDB documentation moved to a GitBook-backed site under
+// https://mariadb.com/docs/server/. The old /kb/en/ URLs only redirect
+// reliably for a subset of pages — others land on a search results page.
+// We therefore list each page with its concrete new docs URL.
+//
+// The `name` field is preserved as it was historically so the JSON file
+// names on disk stay stable (e.g. mariadb-aria-server-status-variables.json).
+//
+// Pages that have no equivalent on the new docs site at all are intentionally
+// omitted (e.g. pbxt-system-variables, galera-cluster-{system,status}-variables,
+// mariadb-audit-plugin-system-variables). Their JSON files are preserved
+// untouched from the previous extraction.
+const DOCS_BASE: &str = "https://mariadb.com/docs/server/";
 
-// {url}  + plugin_name + "/"
-const PLUGINS: [&str; 10] = [
-    "authentication-plugin-gssapi",
-    "authentication-plugin-pam",
-    "aws-key-management-encryption-plugin",
-    "cracklib-password-check-plugin",
-    "disks-plugin",
-    "feedback-plugin",
-    "file-key-management-encryption-plugin",
-    "query-cache-information-plugin",
-    "query-response-time-plugin",
-    "simple-password-check-plugin",
-];
-
-// {url}  + system_name + "-system-variables/"
-const SYSTEM_VARIABLES: [&str; 9] = [
-    "pbxt",
-    "mroonga",
-    "tokudb",
-    "xtradbinnodb-server",
-    "mariadb-audit-plugin",
-    "ssltls",
-    "performance-schema",
-    "mariadb-audit-plugin-options-and",
-    "replication-and-binary-log-server",
-];
-
-const CUSTOM_PAGES: [Page; 9] = [
+const PAGES: &[Page] = &[
+    // --- storage engine system variables ---
     Page {
-        url: "columns-storage-engines-and-plugins/storage-engines/spider/spider-server-system-variables/",
+        url: "server-usage/storage-engines/aria/aria-system-variables",
+        name: "aria-system-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/connect/connect-system-variables",
+        name: "connect-system-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/myisam-storage-engine/myisam-system-variables",
+        name: "myisam-system-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/myrocks/myrocks-system-variables",
+        name: "myrocks-system-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/mroonga/mroonga-system-variables",
+        name: "mroonga-system-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/s3-storage-engine/s3-storage-engine-system-variables",
+        name: "s3-storage-engine-system-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/spider/spider-system-variables",
         name: "spider-server-system-variables",
     },
     Page {
-        url: "semisynchronous-replication/",
-        name: "semisynchronous-replication-system-variables",
+        url: "server-usage/storage-engines/legacy-storage-engines/cassandra/cassandra-system-variables",
+        name: "cassandra-system-variables",
     },
     Page {
-        url: "gtid/",
-        name: "gtid-system-variables",
+        url: "server-usage/storage-engines/legacy-storage-engines/tokudb/tokudb-system-variables",
+        name: "tokudb-system-variables",
     },
     Page {
-        url: "replication/optimization-and-tuning/system-variables/server-system-variables/",
+        url: "server-usage/storage-engines/innodb/innodb-system-variables",
+        name: "xtradbinnodb-server-system-variables",
+    },
+
+    // --- storage engine status variables ---
+    Page {
+        url: "server-usage/storage-engines/aria/aria-status-variables",
+        name: "aria-server-status-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/myrocks/myrocks-status-variables",
+        name: "myrocks-status-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/mroonga/mroonga-status-variables",
+        name: "mroonga-status-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/legacy-storage-engines/cassandra/cassandra-status-variables",
+        name: "cassandra-status-variables",
+    },
+    Page {
+        url: "server-usage/storage-engines/legacy-storage-engines/tokudb/tokudb-status-variables",
+        name: "tokudb-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/system-variables/innodb-status-variables",
+        name: "xtradbinnodb-server-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/system-variables/spider-status-variables",
+        name: "spider-server-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/system-variables/sphinx-status-variables",
+        name: "sphinx-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/system-variables/ssltls-status-variables",
+        name: "ssltls-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/system-variables/oqgraph-system-and-status-variables",
+        name: "oqgraph-system-and-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/system-variables/semisynchronous-replication-plugin-status-variables",
+        name: "semisynchronous-replication-plugin-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/optimization-and-tuning/buffers-caches-and-threads/thread-pool/thread-pool-system-status-variables",
+        name: "thread-pool-system-and-status-variables",
+    },
+    Page {
+        url: "ha-and-performance/standard-replication/replication-and-binary-log-status-variables",
+        name: "replication-and-binary-log-status-variables",
+    },
+    Page {
+        url: "reference/system-tables/performance-schema/performance-schema-status-variables",
+        name: "performance-schema-status-variables",
+    },
+    Page {
+        url: "reference/plugins/mariadb-audit-plugin/mariadb-audit-plugin-status-variables",
+        name: "mariadb-audit-plugin-status-variables",
+    },
+    Page {
+        url: "server-management/variables-and-modes/server-status-variables",
+        name: "server-status-variables",
+    },
+
+    // --- server / cross-cutting system variables ---
+    Page {
+        url: "server-management/variables-and-modes/server-system-variables",
         name: "server-system-variables",
     },
     Page {
-        url: "system-versioned-tables/",
+        url: "security/encryption/data-in-transit-encryption/ssltls-system-variables",
+        name: "ssltls-system-variables",
+    },
+    Page {
+        url: "reference/system-tables/performance-schema/performance-schema-system-variables",
+        name: "performance-schema-system-variables",
+    },
+    Page {
+        url: "reference/plugins/mariadb-audit-plugin/mariadb-audit-plugin-options-and-system-variables",
+        name: "mariadb-audit-plugin-options-and-system-variables",
+    },
+    Page {
+        url: "ha-and-performance/standard-replication/replication-and-binary-log-system-variables",
+        name: "replication-and-binary-log-server-system-variables",
+    },
+    Page {
+        url: "ha-and-performance/standard-replication/semisynchronous-replication",
+        name: "semisynchronous-replication-system-variables",
+    },
+    Page {
+        url: "ha-and-performance/standard-replication/gtid",
+        name: "gtid-system-variables",
+    },
+    Page {
+        url: "reference/sql-structure/temporal-tables/system-versioned-tables",
         name: "versioned-tables-system-variables",
     },
     Page {
-        url: "handlersocket-configuration-options/",
+        url: "reference/sql-structure/nosql/handlersocket/handlersocket-configuration-options",
         name: "handlersocket-configuration-options-variables",
     },
     Page {
-        url: "storage-engine-independent-column-compression/",
+        url: "ha-and-performance/optimization-and-tuning/optimization-and-tuning-compression/storage-engine-independent-column-compression",
         name: "storage-engine-independent-column-compression-variables",
     },
     Page {
-        url: "user-statistics/",
+        url: "ha-and-performance/optimization-and-tuning/query-optimizations/statistics-for-optimizing-queries/user-statistics",
         name: "user-statistics-variables",
     },
     Page {
-        url: "sql-error-log-system-variables-and-options/",
+        url: "ha-and-performance/optimization-and-tuning/system-variables/sql-error-log-system-variables-and-options",
         name: "sql-error-log-plugin-variables",
+    },
+
+    // --- galera (hosted under a separate docs subsite) ---
+    Page {
+        url: "https://mariadb.com/docs/galera-cluster/reference/galera-cluster-system-variables",
+        name: "galera-cluster-system-variables",
+    },
+    Page {
+        url: "https://mariadb.com/docs/galera-cluster/reference/galera-cluster-status-variables",
+        name: "galera-cluster-status-variables",
+    },
+
+    // --- plugins ---
+    Page {
+        url: "reference/plugins/authentication-plugins/authentication-plugin-gssapi",
+        name: "authentication-plugin-gssapi-variables",
+    },
+    Page {
+        url: "reference/plugins/authentication-plugins/authentication-with-pluggable-authentication-modules-pam/authentication-plugin-pam",
+        name: "authentication-plugin-pam-variables",
+    },
+    Page {
+        url: "security/encryption/data-at-rest-encryption/key-management-and-encryption-plugins/aws-key-management-encryption-plugin",
+        name: "aws-key-management-encryption-plugin-variables",
+    },
+    Page {
+        url: "security/encryption/data-at-rest-encryption/key-management-and-encryption-plugins/file-key-management-encryption-plugin",
+        name: "file-key-management-encryption-plugin-variables",
+    },
+    Page {
+        url: "reference/plugins/password-validation-plugins/cracklib-password-check-plugin",
+        name: "cracklib-password-check-plugin-variables",
+    },
+    Page {
+        url: "reference/plugins/password-validation-plugins/simple-password-check-plugin",
+        name: "simple-password-check-plugin-variables",
+    },
+    Page {
+        url: "reference/plugins/other-plugins/disks-plugin",
+        name: "disks-plugin-variables",
+    },
+    Page {
+        url: "reference/plugins/other-plugins/feedback-plugin",
+        name: "feedback-plugin-variables",
+    },
+    Page {
+        url: "reference/plugins/other-plugins/query-cache-information-plugin",
+        name: "query-cache-information-plugin-variables",
+    },
+    Page {
+        url: "reference/plugins/other-plugins/query-response-time-plugin",
+        name: "query-response-time-plugin-variables",
     },
 ];
 
-// {url}  + status_name + "-status-variables/"
-const STATUS_VARIABLES: [&str; 17] = [
-    "server",
-    "galera-cluster",
-    "aria-server",
-    "cassandra",
-    "mroonga",
-    "spider-server",
-    "sphinx",
-    "tokudb",
-    "xtradbinnodb-server",
-    "replication-and-binary-log",
-    "oqgraph-system-and",
-    "thread-pool-system-and",
-    "ssltls",
-    "performance-schema",
-    "myrocks",
-    "semisynchronous-replication-plugin",
-    "mariadb-audit-plugin",
+pub fn get_pages() -> Vec<PageProcess<'static>> {
+    PAGES
+        .iter()
+        .map(|p| PageProcess {
+            url: if p.url.starts_with("http") {
+                p.url.to_string()
+            } else {
+                DOCS_BASE.to_owned() + p.url
+            },
+            name: p.name.to_string(),
+            data_type: "variables",
+        })
+        .collect()
+}
+
+// Known field names in the order we try to match them. Longer/more specific
+// labels come first so e.g. "Default Value" wins over "Default".
+const KNOWN_FIELD_KEYS: &[&str] = &[
+    "Default Value - 64 bit",
+    "Default Value - 32 bit",
+    "Default Table Value",
+    "Default Session Value",
+    "Default Value",
+    "Default",
+    "Range - 64-bit",
+    "Range - 64 bit",
+    "Range - 64bit",
+    "Range - 32-bit",
+    "Range - 32 bit",
+    "Range - 32bit",
+    "Range (Windows)",
+    "Range",
+    "Valid Values",
+    "Valid values",
+    "Valid Vales",
+    "Data Type",
+    "Type",
+    "Command line",
+    "Commandline",
+    "Command-line",
+    "Access type",
+    "DSN parameter name",
+    "Related Variables",
+    "Read-Only",
+    "Read Only",
+    "Size limit",
+    "Minimum Value",
+    "Re-introduced",
+    "See Also",
+    "See also",
+    "Description",
+    "Scope",
+    "Dynamic",
+    "Introduced",
+    "Removed",
+    "Deprecated",
+    "Alias",
+    "Notes",
+    "Note",
+    "Documentation",
+    "Unix",
+    "Windows",
 ];
 
-pub fn get_pages() -> Vec<PageProcess<'static>> {
-    let mut pages = vec![];
-
-    for se in &STORAGE_ENGINES {
-        pages.push(PageProcess {
-            url: KB_URL.to_owned()
-                + "columns-storage-engines-and-plugins/storage-engines/"
-                + se
-                + "/"
-                + se
-                + "-system-variables/",
-            name: format!("{}-system-variables", se),
-            data_type: "variables",
-        });
+/// Best-effort split of an `<li>` text into (key, value) for the new docs
+/// format. The site is mostly "Key: value", but a few entries lack the colon
+/// (e.g. "Range <code>0</code> to <code>4294967295</code>").
+fn split_key_value_no_strong(li_text: &str) -> Option<(String, String)> {
+    if let Some((k, v)) = li_text.split_once(':') {
+        return Some((k.trim().to_string(), v.trim().to_string()));
     }
-
-    for cu in &CUSTOM_PAGES {
-        pages.push(PageProcess {
-            url: KB_URL.to_owned() + cu.url,
-            name: cu.name.to_string(),
-            data_type: "variables",
-        });
+    for key in KNOWN_FIELD_KEYS {
+        if li_text.starts_with(key) {
+            let rest = &li_text[key.len()..];
+            // The key must be followed by whitespace or end-of-text — otherwise
+            // we'd e.g. match "Range" against "RangeFoo".
+            if rest.is_empty() || rest.starts_with(|c: char| c.is_whitespace()) {
+                return Some((key.to_string(), rest.trim().to_string()));
+            }
+        }
     }
-
-    for status_name in &STATUS_VARIABLES {
-        pages.push(PageProcess {
-            url: KB_URL.to_owned() + status_name + "-status-variables/",
-            name: format!("{}-status-variables", status_name),
-            data_type: "variables",
-        });
-    }
-
-    for system_variable_name in &SYSTEM_VARIABLES {
-        pages.push(PageProcess {
-            url: KB_URL.to_owned() + system_variable_name + "-system-variables/",
-            name: format!("{}-system-variables", system_variable_name),
-            data_type: "variables",
-        });
-    }
-
-    for plugin_name in &PLUGINS {
-        pages.push(PageProcess {
-            url: KB_URL.to_owned() + plugin_name + "/",
-            name: format!("{}-variables", plugin_name),
-            data_type: "variables",
-        });
-    }
-
-    pages
+    None
 }
 
 fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
-    let mut key_name: String = li_node
-        .find(Name("strong"))
-        .next()
-        .expect("li to have strong")
-        .text();
-    let mut row_value: String = li_node.text();
-    row_value = row_value
-        .split_once(key_name.as_str())
-        .expect("It splits")
-        .1
-        .trim()
-        .to_string();
+    let li_text: String = li_node.text();
+    let (mut key_name, row_value): (String, String) =
+        match li_node.find(Name("strong")).next() {
+            // Legacy KB format: <strong>Key:</strong> value
+            Some(strong) => {
+                let k = strong.text();
+                let v = li_text
+                    .split_once(k.as_str())
+                    .map(|x| x.1.trim().to_string())
+                    .unwrap_or_default();
+                (k, v)
+            }
+            // New docs (GitBook) format: <p>Key: value</p>
+            None => match split_key_value_no_strong(li_text.trim()) {
+                Some(kv) => kv,
+                None => return entry,
+            },
+        };
 
     key_name = key_name.to_lowercase().replace(":", "").trim().to_string();
 
@@ -228,7 +395,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                 entry.default = Some(cleaner::clean_default(row_value));
             }
         }
-        "commandline" | "command-line" => {
+        "commandline" | "command-line" | "command line" => {
             if li_node.find(Name("code")).count() >= 1 {
                 entry.cli = Some(
                     li_node
@@ -286,13 +453,36 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
         }
         "valid values" | "valid vales" => {
             // Handle typo on log_slow_disabled_statements
-            if li_node.find(Name("code")).next().is_some() {
+            // The new docs site sometimes nests subsequent fields
+            // (Default Value, Range, …) inside "Valid Values:" by mistake.
+            // Detect that case so we don't claim those nested <code> values
+            // as the actual valid values — process_ul will recurse separately.
+            let misnested_fields = li_node.find(Name("ul")).any(|ul| {
+                ul.find(Name("li")).any(|nested_li| {
+                    let t = nested_li.text();
+                    let t = t.trim();
+                    KNOWN_FIELD_KEYS
+                        .iter()
+                        .any(|k| t.starts_with(k) && t[k.len()..].starts_with(|c: char| c == ':'))
+                })
+            });
+            if li_node.find(Name("code")).next().is_some() && !misnested_fields {
                 let mut values = vec![];
                 for code_node in li_node.find(Name("code")) {
                     values.push(code_node.text());
                 }
+                // The new docs often packs the whole list into a single
+                // <code> ("A, B, C") — flatten that into N entries to match
+                // the historical extraction shape.
+                if values.len() == 1 && values[0].contains(',') {
+                    values = values[0]
+                        .split(',')
+                        .map(|s| s.trim().to_string())
+                        .filter(|s| !s.is_empty())
+                        .collect();
+                }
                 entry.valid_values = Some(values);
-            } else {
+            } else if !misnested_fields {
                 let clean_value = cleaner::clean_text_valid_values(row_value.trim().to_string());
                 if clean_value != "" {
                     entry.valid_values = Some(
@@ -436,19 +626,40 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
 }
 
 fn process_ul(mut entry: KbParsedEntry, ul_node: Node) -> KbParsedEntry {
+    let ul_index = ul_node.index();
     let li_nodes = ul_node
         .find(Name("li"))
-        .filter(|li| li.find(Name("strong")).next().is_some())
-        .filter(|li| li.parent().unwrap().is(Attr("start", "1")));
+        // Only direct <li> children of this <ul> — exclude nested lists,
+        // which will be recursed into below.
+        .filter(|li| li.parent().map(|p| p.index() == ul_index).unwrap_or(false));
 
     for li in li_nodes {
-        entry = process_li(entry, li)
+        entry = process_li(entry, li);
+
+        // The new docs site sometimes nests subsequent fields (e.g. Default
+        // Value, Range) inside the <ul> that visually follows "Valid Values:".
+        // Recurse so we still pick those fields up at this entry's level.
+        for nested in li
+            .find(Name("ul"))
+            .filter(|n| n.find(Name("li")).next().is_some())
+        {
+            entry = process_ul(entry, nested);
+        }
     }
 
     entry
 }
 
 fn process_block(header_node: Node) -> KbParsedEntry {
+    // Prefer the <code> child for the name (new docs format wraps it in <code>,
+    // and the surrounding wrapper may contribute hidden glyphs to .text()).
+    let name = header_node
+        .find(Name("code"))
+        .next()
+        .map(|c| c.text().trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| header_node.text().trim().to_string());
+
     let mut entry = KbParsedEntry {
         is_removed: false,
         has_description: false,
@@ -456,7 +667,7 @@ fn process_block(header_node: Node) -> KbParsedEntry {
         default: None,
         dynamic: None,
         id: Some(header_node.attr("id").unwrap().to_string()),
-        name: Some(header_node.text().trim().to_string()),
+        name: Some(name),
         scope: None,
         r#type: None,
         valid_values: None,
@@ -481,13 +692,26 @@ fn process_block(header_node: Node) -> KbParsedEntry {
 
         let n = node_cur.unwrap();
 
-        // We hit the next header
-        if n.is(Class("anchored_heading")) {
+        // We hit the next header (legacy KB or new docs format)
+        if n.is(Class("anchored_heading")) || n.is(Class("heading")) {
             break;
         }
 
         if n.is(Name("ul")) && n.find(Name("li")).next().is_some() {
             entry = process_ul(entry, n);
+        } else if n.is(Name("div")) {
+            // The new docs occasionally wraps a variable's field list in a
+            // tabbed widget (e.g. innodb_doublewrite has a "Current" tab and
+            // a "< MariaDB 11.0.6" tab). Walk into the div and process any
+            // <ul> that looks like a field list.
+            for inner_ul in n.find(Name("ul")).filter(|u| {
+                u.find(Name("li"))
+                    .next()
+                    .map(|li| !li.text().trim().is_empty())
+                    .unwrap_or(false)
+            }) {
+                entry = process_ul(entry, inner_ul);
+            }
         }
     }
 
@@ -504,7 +728,7 @@ pub fn extract_mariadb_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
     let document = Document::from(qr.body.as_str());
 
     document
-        .find(Class("anchored_heading"))
+        .find(Class("anchored_heading").or(Class("heading")))
         .filter(|elem| elem.is(Name("h3")) || elem.is(Name("h4")))
         .filter(|elem| elem.attr("id").is_some())
         // Handle an edge case for https://mariadb.com/kb/en/temporal-data-tables/
@@ -1251,6 +1475,87 @@ mod tests {
                 ]),
                 range: None,
             },],
+            entries
+        );
+    }
+
+    #[test]
+    fn test_case_23_nested_misplaced_fields() {
+        // The new docs sometimes nests "Default Value" and "Range" under
+        // "Valid Values:" as if they were sub-items. We should still extract
+        // them at the entry level and not treat the inner codes as valid
+        // values.
+        let entries = extract_mariadb_from_text(QueryResponse {
+            body: get_test_data("mariadb_test_case_23.html"),
+            url: "https://example.com".to_string(),
+        });
+
+        assert_eq!(
+            vec![KbParsedEntry {
+                has_description: true,
+                is_removed: false,
+                cli: Some("--aria_group_commit_interval=#".to_string()),
+                default: Some("0".to_string()),
+                dynamic: Some(false),
+                id: Some("aria_group_commit_interval".to_string()),
+                name: Some("aria_group_commit_interval".to_string()),
+                scope: Some(vec!["global".to_string()]),
+                r#type: Some("integer".to_string()),
+                valid_values: None,
+                range: Some(Range {
+                    to_upwards: None,
+                    from: Some(0),
+                    to: Some(4294967295),
+                    from_f: None,
+                    to_f: None,
+                }),
+            }],
+            entries
+        );
+    }
+
+    #[test]
+    fn test_case_22_new_docs_format() {
+        let entries = extract_mariadb_from_text(QueryResponse {
+            body: get_test_data("mariadb_test_case_22.html"),
+            url: "https://example.com".to_string(),
+        });
+
+        assert_eq!(
+            vec![
+                KbParsedEntry {
+                    has_description: true,
+                    is_removed: false,
+                    cli: Some("--aria-block-size=#".to_string()),
+                    default: Some("8192".to_string()),
+                    dynamic: Some(false),
+                    id: Some("aria_block_size".to_string()),
+                    name: Some("aria_block_size".to_string()),
+                    scope: Some(vec!["global".to_string()]),
+                    r#type: Some("integer".to_string()),
+                    valid_values: None,
+                    range: None,
+                },
+                KbParsedEntry {
+                    has_description: true,
+                    is_removed: false,
+                    cli: Some("--aria-checkpoint-interval=#".to_string()),
+                    default: Some("30".to_string()),
+                    dynamic: Some(true),
+                    id: Some("aria_checkpoint_interval".to_string()),
+                    name: Some("aria_checkpoint_interval".to_string()),
+                    scope: Some(vec!["global".to_string()]),
+                    r#type: Some("integer".to_string()),
+                    valid_values: None,
+                    range: Some(Range {
+                        to_upwards: None,
+                        from: Some(0),
+                        to: Some(4294967295),
+                        from_f: None,
+                        to_f: None,
+                    }),
+                },
+            ],
             entries
         );
     }

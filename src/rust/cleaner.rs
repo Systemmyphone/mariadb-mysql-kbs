@@ -29,6 +29,8 @@ pub fn clean_type(type_str: String) -> Option<String> {
         return Some("string".to_string());
     } else if type_str == "datetime" {
         return Some("string".to_string());
+    } else if type_str == "bigint unsigned" || type_str == "int unsigned" {
+        return Some("integer".to_string());
     }
 
     if REAL_TYPES.into_iter().find(|t| t.to_string() == type_str) == None {
