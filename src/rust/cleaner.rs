@@ -29,8 +29,15 @@ pub fn clean_type(type_str: String) -> Option<String> {
         return Some("string".to_string());
     } else if type_str == "datetime" {
         return Some("string".to_string());
-    } else if type_str == "bigint unsigned" || type_str == "int unsigned" {
+    } else if type_str == "bigint unsigned"
+        || type_str == "int unsigned"
+        || type_str == "unsigned long"
+    {
         return Some("integer".to_string());
+    } else if type_str == "bitmap" {
+        // MySQL's ndb_recv_thread_cpu_mask documents itself as "Bitmap" but
+        // its on-disk form is a comma-separated CPU-mask string (e.g. "0-3,5").
+        return Some("string".to_string());
     }
 
     if REAL_TYPES.into_iter().find(|t| t.to_string() == type_str) == None {
@@ -70,7 +77,7 @@ pub fn clean_type(type_str: String) -> Option<String> {
         }
 
         if type_str.len() < 30 && type_str.len() > 0 {
-            println!("not known type: {}", type_str);
+            eprintln!("not known type: {}", type_str);
         }
 
         return None;
@@ -212,7 +219,7 @@ pub fn clean_range_from_to(default_text_value: String) -> String {
             .to_string();
     }
     if default_text_value.contains('(') && default_text_value.contains(')') {
-        println!("dtv: {}", default_text_value);
+        eprintln!("dtv: {}", default_text_value);
     }
     return default_text_value.trim().to_string();
 }
@@ -542,6 +549,41 @@ mod tests {
     }
 
     #[test]
+    fn clean_type_unsigned_long() {
+        // MySQL audit-log-reference exposes some vars as "Type: Unsigned Long".
+        assert_eq!(
+            clean_type("unsigned long".to_string()),
+            Some("integer".to_string()),
+        );
+    }
+
+    #[test]
+    fn clean_type_bigint_unsigned() {
+        assert_eq!(
+            clean_type("bigint unsigned".to_string()),
+            Some("integer".to_string()),
+        );
+    }
+
+    #[test]
+    fn clean_type_int_unsigned() {
+        assert_eq!(
+            clean_type("int unsigned".to_string()),
+            Some("integer".to_string()),
+        );
+    }
+
+    #[test]
+    fn clean_type_bitmap() {
+        // MySQL ndb_recv_thread_cpu_mask is documented as "Type: Bitmap" but
+        // its value is a comma-separated CPU-mask string like "0-3,5".
+        assert_eq!(
+            clean_type("bitmap".to_string()),
+            Some("string".to_string()),
+        );
+    }
+
+    #[test]
     fn clean_type_ip_address() {
         let type_str = clean_type("ip address".to_string());
         assert_eq!(type_str, Some("string".to_string()));
@@ -694,5 +736,114 @@ mod tests {
     fn is_valid_default_dataset_8() {
         let is_valid = is_valid_default("0 (non-segmented)");
         assert_eq!(is_valid, true);
+    }
+
+    /// Walk every committed `data/variables/*.json` and flag entries that
+    /// carry a `cli` or `default` (so they're not just a name-only stub)
+    /// but no `type`. That's the shape of an entry whose `Data Type:` line
+    /// went through `clean_type` and got `None` back — i.e. a new unknown
+    /// type label is in play and needs to be added here.
+    #[test]
+    fn data_files_have_typed_variables() {
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("data")
+            .join("variables");
+
+        let mut missing: Vec<String> = Vec::new();
+        for entry in std::fs::read_dir(&dir).expect("data/variables exists") {
+            let path = entry.unwrap().path();
+            if path.extension().and_then(|s| s.to_str()) != Some("json") {
+                continue;
+            }
+            let raw = std::fs::read_to_string(&path).unwrap();
+            let v: serde_json::Value = serde_json::from_str(&raw)
+                .unwrap_or_else(|e| panic!("invalid JSON in {}: {}", path.display(), e));
+            let Some(arr) = v.get("data").and_then(|d| d.as_array()) else {
+                continue;
+            };
+            for item in arr {
+                let has_cli_or_default =
+                    item.get("cli").is_some() || item.get("default").is_some();
+                let has_type = item.get("type").is_some();
+                let is_removed = item
+                    .get("isRemoved")
+                    .and_then(|b| b.as_bool())
+                    .unwrap_or(false);
+                if has_cli_or_default && !has_type && !is_removed {
+                    let name = item
+                        .get("name")
+                        .and_then(|n| n.as_str())
+                        .unwrap_or("<unnamed>");
+                    missing.push(format!("{}: {}", path.file_name().unwrap().to_string_lossy(), name));
+                }
+            }
+        }
+
+        // Snapshot of currently-allowed gaps. These are variables whose
+        // upstream docs page genuinely lacks a "Data Type:" line, so
+        // clean_type has nothing to consume. Anything *not* in this list is
+        // a regression — most likely a new "Type: …" label that clean_type
+        // doesn't yet map.
+        let allowed_known_gaps: std::collections::HashSet<&str> = [
+            // MySQL command-line switches (boolean flags) — server-options
+            // pages don't carry a Data Type.
+            "mysql-server-options.json: ansi",
+            "mysql-server-options.json: console",
+            "mysql-server-options.json: core_file",
+            "mysql-server-options.json: help",
+            "mysql-server-options.json: install",
+            "mysql-server-options.json: install_manual",
+            "mysql-server-options.json: local_service",
+            "mysql-server-options.json: remove",
+            "mysql-server-options.json: skip_host_cache",
+            "mysql-server-options.json: skip_new",
+            "mysql-server-options.json: skip_stack_trace",
+            "mysql-server-options.json: standalone",
+            "mysql-mysql-cluster-options-variables.json: skip_ndbcluster",
+            // MySQL 5.7 thread_pool variables — upstream omits Data Type.
+            "mysql-server-system-variables_5.7.json: thread_pool_algorithm",
+            "mysql-server-system-variables_5.7.json: thread_pool_max_unused_threads",
+            "mysql-server-system-variables_5.7.json: thread_pool_prio_kickup_timer",
+            // MariaDB legacy / deprecated / removed-engine pages — preserved
+            // from origin/main because the upstream page is either gone
+            // (PBXT) or never had a Data Type field.
+            "mariadb-cassandra-system-variables.json: cassandra_read_consistency",
+            "mariadb-cassandra-system-variables.json: cassandra_write_consistency",
+            "mariadb-mariadb-audit-plugin-options-and-system-variables.json: server_audit_sync_log_file",
+            "mariadb-pbxt-system-variables.json: pbxt_auto_increment_mode",
+            "mariadb-pbxt-system-variables.json: pbxt_checkpoint_frequency",
+            "mariadb-pbxt-system-variables.json: pbxt_flush_log_at_trx_commit",
+            "mariadb-pbxt-system-variables.json: pbxt_garbage_threshold",
+            "mariadb-pbxt-system-variables.json: pbxt_index_cache_size",
+            "mariadb-pbxt-system-variables.json: pbxt_offline_log_function",
+            "mariadb-pbxt-system-variables.json: pbxt_record_cache_size",
+            "mariadb-pbxt-system-variables.json: pbxt_support_xa",
+            "mariadb-pbxt-system-variables.json: pbxt_sweeper_priority",
+            "mariadb-replication-and-binary-log-server-system-variables.json: init_rpl_role",
+            "mariadb-replication-and-binary-log-server-system-variables.json: slave_parallel_workers",
+            "mariadb-server-system-variables.json: default_table_type",
+            "mariadb-server-system-variables.json: multi_range_count",
+            "mariadb-server-system-variables.json: tmp_memory_table_size",
+            "mariadb-spider-server-system-variables.json: spider_table_sts_thread_count",
+            "mariadb-xtradbinnodb-server-system-variables.json: innodb_auto_lru_dump",
+            "mariadb-xtradbinnodb-server-system-variables.json: innodb_lock_wait_timeout",
+        ]
+        .into_iter()
+        .collect();
+
+        let unexpected: Vec<&String> = missing
+            .iter()
+            .filter(|m| !allowed_known_gaps.contains(m.as_str()))
+            .collect();
+
+        assert!(
+            unexpected.is_empty(),
+            "Entries with cli/default but no type — likely a new unknown 'Type: …' label that clean_type doesn't handle:\n  {}",
+            unexpected
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<_>>()
+                .join("\n  ")
+        );
     }
 }

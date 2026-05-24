@@ -642,7 +642,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                         }
                     }
                 } else {
-                    println!("range: {}", values.len());
+                    eprintln!("range: {}", values.len());
                 }
             }
         }
@@ -677,7 +677,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
         | "windows"
         | "notes" => {}
         _key => {
-            println!("missing: {} -> {}", key_name, row_value);
+            eprintln!("missing: {} -> {}", key_name, row_value);
         }
     }
 

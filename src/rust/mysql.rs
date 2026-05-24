@@ -498,10 +498,7 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
                     li_node
                         .find(Class("listitem"))
                         .filter(|li_node| filter_sublink(li_node))
-                        .map(move |li_node| {
-                            println!("{:?}", li_node);
-                            process_sublink(li_node, parent_anchor.clone())
-                        })
+                        .map(move |li_node| process_sublink(li_node, parent_anchor.clone()))
                 })
                 .filter(|e| e.name.is_some()),
         )
