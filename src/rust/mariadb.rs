@@ -397,25 +397,62 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
         }
         "commandline" | "command-line" | "command line" => {
             if li_node.find(Name("code")).count() >= 1 {
-                entry.cli = Some(
-                    li_node
-                        .find(Name("code"))
-                        .map(|code_node| code_node.text().trim().to_string())
-                        .map(|code| cleaner::clean_cli(code, true))
-                        .filter(|code| code.is_some())
-                        .map(|code| code.unwrap())
-                        .filter(|row_value| {
-                            row_value.to_lowercase() != "no"
-                                && row_value.to_lowercase() != "none"
-                                && row_value.to_lowercase() != "n/a"
-                                && row_value.to_lowercase() != "no commandline option"
-                        })
-                        .collect::<Vec<String>>()
-                        .join(", "),
-                );
-                if entry.cli == Some("".to_string()) {
-                    entry.cli = None;
+                // Pick the form that's faithful to the HTML:
+                //   - When the codes live in a *nested* <ul> they're enumerated
+                //     per-version variants ("Command line:" → <ul><li>--flag=name
+                //     </li><li>--flag=[0|1]</li></ul>). Join with ", ".
+                //   - Otherwise, if row_value starts with the first code we
+                //     trust row_value as-is — that preserves natural separators
+                //     (or absence of one, e.g.
+                //     `<code>--flag=</code><code>value</code>` where the
+                //     placeholder value is in its own adjacent <code>).
+                //   - Otherwise the codes are scattered across unrelated
+                //     wrapper markup (old KB pages with multi-version variants
+                //     in sibling <p>s); keep only the first one.
+                let codes: Vec<String> = li_node
+                    .find(Name("code"))
+                    .map(|c| c.text().trim().to_string())
+                    .filter(|c| !c.is_empty())
+                    .collect();
+                let has_nested_ul = li_node.find(Name("ul")).next().is_some();
+                let row_trimmed = row_value.trim();
+                // Compute the text "leftover" after the "Command line:" key
+                // and all <code> contents — if substantial, the codes are
+                // surrounded by version annotations (e.g. "MariaDB starting
+                // with 10.4.3") so we keep only the first variant. Otherwise
+                // the codes are clean alternatives and we join with ",".
+                let mut leftover = row_value.clone();
+                for c in &codes {
+                    leftover = leftover.replacen(c, "", 1);
                 }
+                let leftover_has_text = leftover.chars().any(|c| c.is_alphanumeric());
+
+                let raw = if has_nested_ul && !leftover_has_text {
+                    codes.join(",")
+                } else if has_nested_ul {
+                    // Version-annotated variants — keep just the first.
+                    codes.first().cloned().unwrap_or_default()
+                } else {
+                    match codes.first() {
+                        Some(first) if row_trimmed.starts_with(first.as_str()) => {
+                            // Normalize "<flag> or <flag>" → "<flag>,<flag>".
+                            row_trimmed.replace(" or ", ",")
+                        }
+                        Some(first) => first.clone(),
+                        None => String::new(),
+                    }
+                };
+                let lc = raw.to_lowercase();
+                let cleaned = if lc == "no"
+                    || lc == "none"
+                    || lc == "n/a"
+                    || lc == "no commandline option"
+                {
+                    None
+                } else {
+                    cleaner::clean_cli(raw, true)
+                };
+                entry.cli = cleaned.filter(|c| !c.is_empty());
             } else {
                 if row_value.to_lowercase() != "no"
                     && row_value.to_lowercase() != "none"
@@ -1096,7 +1133,7 @@ mod tests {
             vec![KbParsedEntry {
                 has_description: true,
                 is_removed: false,
-                cli: Some("--wsrep-sync-wait=".to_string()),
+                cli: Some("--wsrep-sync-wait=#".to_string()),
                 default: Some("0".to_string()),
                 dynamic: Some(true),
                 id: Some("wsrep_sync_wait".to_string()),
@@ -1459,7 +1496,9 @@ mod tests {
             vec![KbParsedEntry {
                 has_description: true,
                 is_removed: false,
-                cli: Some("--wsrep-debug[={NONE|SERVER|TRANSACTION|STREAMING|CLIENT}], --wsrep-debug[={0|1}]".to_string()),
+                cli: Some(
+                    "--wsrep-debug[={NONE|SERVER|TRANSACTION|STREAMING|CLIENT}]".to_string(),
+                ),
                 default: Some("NONE (>= MariaDB 10.4.3),  OFF (<= MariaDB 10.4.2)".to_string()),
                 dynamic: Some(true),
                 id: Some("wsrep_debug".to_string()),

@@ -162,6 +162,13 @@ pub fn clean_default(default_value: String) -> String {
  * @return String The same or an alternative text
  */
 pub fn clean_text_default(default_text_value: String) -> String {
+    // Some pages on the new docs site contain a literal "`` " token where
+    // the author meant to render an empty Markdown code span — strip it so
+    // we don't carry the stray backticks into the JSON.
+    let default_text_value = default_text_value
+        .replace("`` ", "")
+        .replace(" ``", "")
+        .replace("``", "");
     if default_text_value == "Autosized (see description)" {
         return "(autosized)".to_string();
     }
