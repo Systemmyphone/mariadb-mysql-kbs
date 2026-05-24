@@ -299,6 +299,24 @@ const KNOWN_FIELD_KEYS: &[&str] = &[
     "Windows",
 ];
 
+/// Strip a trailing `" (...)"` annotation (typically a version note like
+/// "(until MySQL 4.1.1)") from a CLI string. Returns the input unchanged
+/// when the trailing parens are part of the flag's own syntax (i.e. there
+/// is no space before the opening paren).
+fn strip_trailing_paren_note(s: &str) -> String {
+    let s = s.trim_end();
+    if !s.ends_with(')') {
+        return s.to_string();
+    }
+    if let Some(open) = s.rfind(" (") {
+        // Make sure the closing ')' actually pairs with this " (".
+        if s[open + 2..].rfind(')') == Some(s.len() - open - 3) {
+            return s[..open].trim_end().to_string();
+        }
+    }
+    s.to_string()
+}
+
 /// Best-effort split of an `<li>` text into (key, value) for the new docs
 /// format. The site is mostly "Key: value", but a few entries lack the colon
 /// (e.g. "Range <code>0</code> to <code>4294967295</code>").
@@ -436,7 +454,11 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                     match codes.first() {
                         Some(first) if row_trimmed.starts_with(first.as_str()) => {
                             // Normalize "<flag> or <flag>" → "<flag>,<flag>".
-                            row_trimmed.replace(" or ", ",")
+                            let s = row_trimmed.replace(" or ", ",");
+                            // Strip trailing " (annotation)" — typically a
+                            // version note like "(until MySQL 4.1.1)" that
+                            // doesn't belong in the cli string.
+                            strip_trailing_paren_note(&s)
                         }
                         Some(first) => first.clone(),
                         None => String::new(),
@@ -1514,6 +1536,56 @@ mod tests {
                 ]),
                 range: None,
             },],
+            entries
+        );
+    }
+
+    #[test]
+    fn strip_trailing_paren_note_drops_version_annotation() {
+        assert_eq!(
+            strip_trailing_paren_note("--safe-show-database (until MySQL 4.1.1)"),
+            "--safe-show-database"
+        );
+    }
+
+    #[test]
+    fn strip_trailing_paren_note_keeps_inline_paren_syntax() {
+        // No leading space before "(" → it's part of the flag's own syntax.
+        assert_eq!(
+            strip_trailing_paren_note("--option(arg)"),
+            "--option(arg)"
+        );
+    }
+
+    #[test]
+    fn strip_trailing_paren_note_no_trailing_paren_is_noop() {
+        assert_eq!(
+            strip_trailing_paren_note("--wsrep-sync-wait=#"),
+            "--wsrep-sync-wait=#"
+        );
+    }
+
+    #[test]
+    fn test_case_24_strips_trailing_version_annotation() {
+        let entries = extract_mariadb_from_text(QueryResponse {
+            body: get_test_data("mariadb_test_case_24.html"),
+            url: "https://example.com".to_string(),
+        });
+
+        assert_eq!(
+            vec![KbParsedEntry {
+                has_description: true,
+                is_removed: false,
+                cli: Some("--safe-show-database".to_string()),
+                default: Some("OFF".to_string()),
+                dynamic: Some(true),
+                id: Some("safe_show_database".to_string()),
+                name: Some("safe_show_database".to_string()),
+                scope: Some(vec!["global".to_string()]),
+                r#type: Some("boolean".to_string()),
+                valid_values: None,
+                range: None,
+            }],
             entries
         );
     }
