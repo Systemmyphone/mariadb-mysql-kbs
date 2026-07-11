@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Williamdes\MariaDBMySQLKBS\Test;
 
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use Williamdes\MariaDBMySQLKBS\SlimData;
 
@@ -29,6 +30,7 @@ class SlimDataTest extends TestCase
      * @depends testCreateInstance
      * @return void
      */
+    #[Depends('testCreateInstance')]
     public function testToJsonEmpty(SlimData $slimData): void
     {
         $this->assertEquals('{"version":2}', json_encode($slimData));
@@ -41,6 +43,7 @@ class SlimDataTest extends TestCase
      * @depends testCreateInstance
      * @return void
      */
+    #[Depends('testCreateInstance')]
     public function testToJsonWithVariables(SlimData $slimData): void
     {
         $slimData->addVariable('Test_var', 'boolean', true);

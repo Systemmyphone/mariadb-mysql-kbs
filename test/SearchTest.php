@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Williamdes\MariaDBMySQLKBS\Test;
 
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Williamdes\MariaDBMySQLKBS\SlimData;
 use Williamdes\MariaDBMySQLKBS\Search;
@@ -150,6 +151,7 @@ class SearchTest extends TestCase
      *
      * @return void
      */
+    #[RunInSeparateProcess]
     public function testExceptionLoadData(): void
     {
         $this->expectException(KBException::class);

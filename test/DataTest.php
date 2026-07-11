@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Williamdes\MariaDBMySQLKBS\Test;
 
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use Swaggest\JsonSchema\Schema;
 use stdClass;
@@ -49,6 +50,7 @@ class DataTest extends TestCase
      *
      * @return void
      */
+    #[Depends('testVendorFound')]
     public function testFileSample(): void
     {
         $slimDataTestData = (object) json_decode(
@@ -65,6 +67,7 @@ class DataTest extends TestCase
      *
      * @return void
      */
+    #[Depends('testVendorFound')]
     public function testFileSlim(): void
     {
         $slimData = (object) json_decode((string) file_get_contents(__DIR__ . '/../dist/merged-slim.json'));
@@ -77,6 +80,7 @@ class DataTest extends TestCase
      *
      * @return void
      */
+    #[Depends('testVendorFound')]
     public function testFileUltraSlim(): void
     {
         $slimData = (object) json_decode((string) file_get_contents(__DIR__ . '/../dist/merged-ultraslim.json'));
@@ -89,6 +93,7 @@ class DataTest extends TestCase
      *
      * @return void
      */
+    #[Depends('testVendorFound')]
     public function testFileRaw(): void
     {
         $slimData = (object) json_decode((string) file_get_contents(__DIR__ . '/../dist/merged-raw.json'));
