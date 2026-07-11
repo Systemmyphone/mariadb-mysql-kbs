@@ -203,6 +203,12 @@ fn process_row_to_entry(
                 }
             }
         }
+        // MariaDB flags removed variables through a "Removed" row (see
+        // mariadb.rs); MySQL documents them with a "Deprecated: Yes" (or
+        // "Removed") property row. Wire both into is_removed the same way.
+        "deprecated" | "removed" => {
+            entry.is_removed = true;
+        }
         _key => {
             //println!("tr: {} -> {}", row_name, row_value);
             //println!("missing: {}", key);
@@ -684,6 +690,30 @@ mod tests {
         assert!(filter_sublink(&items[0]), "bare variable name should be kept");
         assert!(!filter_sublink(&items[1]), "IP address example should be skipped");
         assert!(!filter_sublink(&items[2]), "hostname example should be skipped");
+    }
+
+    #[test]
+    fn deprecated_row_sets_is_removed() {
+        let html = r#"<html><div class="itemizedlist"><ul class="itemizedlist"><li class="listitem">
+            <p><a name="sysvar_authentication_fido_rp_id"></a>
+            <a class="link" href="x.html#sysvar_authentication_fido_rp_id"><code class="option">--authentication-fido-rp-id=value</code></a></p>
+            <div class="informaltable"><table summary="Properties for authentication_fido_rp_id"><tbody>
+                <tr><th>Command-Line Format</th><td><code class="literal">--authentication-fido-rp-id=value</code></td></tr>
+                <tr><th>Deprecated</th><td>Yes</td></tr>
+                <tr><th>System Variable</th><td><code class="literal">authentication_fido_rp_id</code></td></tr>
+                <tr><th>Type</th><td>String</td></tr>
+                <tr><th>Default Value</th><td><code class="literal">MySQL</code></td></tr>
+            </tbody></table></div>
+        </li></ul></div></html>"#;
+        let entries = extract_mysql_from_text(QueryResponse {
+            body: html.to_string(),
+            url: "https://dev.mysql.com/doc/refman/8.0/en/pluggable-authentication-system-variables.html".to_string(),
+        });
+        let e = entries
+            .iter()
+            .find(|e| e.name.as_deref() == Some("authentication_fido_rp_id"))
+            .expect("variable extracted");
+        assert!(e.is_removed, "Deprecated: Yes should set is_removed");
     }
 
     #[test]
