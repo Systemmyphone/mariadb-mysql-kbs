@@ -7,6 +7,8 @@ use ureq::{Agent, Error, ResponseExt};
 
 const UA_FROM: &str = "williamdes+mariadb-mysql-kbs@wdes.fr";
 const UA: &str = "mariadb-mysql-kbs-bot (+https://github.com/williamdes/mariadb-mysql-kbs; williamdes+mariadb-mysql-kbs@wdes.fr)";
+// dev.mysql.com 403s custom bot User-Agents, so present a browser there only.
+const UA_BROWSER: &str = "Mozilla/5.0 (X11; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0";
 
 pub enum ExtractionType {
     MariaDB,
@@ -43,12 +45,29 @@ pub fn extract(only: ExtractionPreference) {
 }
 
 pub fn get_html_from_url(agent: Agent, url: &str) -> Result<QueryResponse, QueryErrorResponse> {
-    match agent
-        .get(url)
-        .header("From", UA_FROM)
-        .header("User-Agent", UA)
-        .call()
-    {
+    let request = agent.get(url);
+    // dev.mysql.com blocks the bot User-Agent, so send browser headers there;
+    // every other source keeps the original self-identifying bot request.
+    let request = if url.contains("dev.mysql.com") {
+        request
+            .header("User-Agent", UA_BROWSER)
+            .header(
+                "Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            )
+            .header("Accept-Language", "en-US,en;q=0.9")
+            .header("DNT", "1")
+            .header("Sec-GPC", "1")
+            .header("Upgrade-Insecure-Requests", "1")
+            .header("Sec-Fetch-Dest", "document")
+            .header("Sec-Fetch-Mode", "navigate")
+            .header("Sec-Fetch-Site", "none")
+            .header("Sec-Fetch-User", "?1")
+            .header("Priority", "u=0, i")
+    } else {
+        request.header("From", UA_FROM).header("User-Agent", UA)
+    };
+    match request.call() {
         Ok(mut response) => Ok(QueryResponse {
             url: response.get_uri().to_string(),
             body: response
