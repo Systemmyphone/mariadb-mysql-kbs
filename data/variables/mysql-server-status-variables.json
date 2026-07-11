@@ -1031,14 +1031,6 @@
     {
       "id": "statvar_Com_xxx",
       "name": "Com_stmt_close"
-    },
-    {
-      "id": "statvar_Innodb_redo_log_resize_status",
-      "name": "OK"
-    },
-    {
-      "id": "statvar_Innodb_redo_log_resize_status",
-      "name": "Resizing down"
     }
   ],
   "name": "server-status-variables",

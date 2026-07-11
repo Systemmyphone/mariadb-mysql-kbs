@@ -401,14 +401,6 @@
         "global"
       ],
       "type": "string"
-    },
-    {
-      "id": "sysvar_authentication_ldap_simple_auth_method_name",
-      "name": "10.172.166.100"
-    },
-    {
-      "id": "sysvar_authentication_ldap_simple_auth_method_name",
-      "name": "ldap1.mem.local"
     }
   ],
   "name": "pluggable-authentication-system-variables",

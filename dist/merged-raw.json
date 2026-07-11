@@ -45706,24 +45706,6 @@
                 }
             ]
         },
-        "10.172.166.100": {
-            "name": "10.172.166.100",
-            "ids": [
-                {
-                    "anchor": "sysvar_authentication_ldap_simple_auth_method_name",
-                    "url": "https://dev.mysql.com/doc/refman/8.0/en/pluggable-authentication-system-variables.html"
-                }
-            ]
-        },
-        "ldap1.mem.local": {
-            "name": "ldap1.mem.local",
-            "ids": [
-                {
-                    "anchor": "sysvar_authentication_ldap_simple_auth_method_name",
-                    "url": "https://dev.mysql.com/doc/refman/8.0/en/pluggable-authentication-system-variables.html"
-                }
-            ]
-        },
         "max_binlog_dump_events": {
             "cli": "--max-binlog-dump-events=#",
             "default": "0",
@@ -48491,24 +48473,6 @@
             "ids": [
                 {
                     "anchor": "statvar_Tls_library_version",
-                    "url": "https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html"
-                }
-            ]
-        },
-        "OK": {
-            "name": "OK",
-            "ids": [
-                {
-                    "anchor": "statvar_Innodb_redo_log_resize_status",
-                    "url": "https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html"
-                }
-            ]
-        },
-        "Resizing down": {
-            "name": "Resizing down",
-            "ids": [
-                {
-                    "anchor": "statvar_Innodb_redo_log_resize_status",
                     "url": "https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html"
                 }
             ]

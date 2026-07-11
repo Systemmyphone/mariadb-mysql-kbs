@@ -34021,18 +34021,6 @@
                 "68#sysvar_authentication_ldap_simple_user_search_attr"
             ]
         },
-        "10.172.166.100": {
-            "name": "10.172.166.100",
-            "ids": [
-                "68#sysvar_authentication_ldap_simple_auth_method_name"
-            ]
-        },
-        "ldap1.mem.local": {
-            "name": "ldap1.mem.local",
-            "ids": [
-                "68#sysvar_authentication_ldap_simple_auth_method_name"
-            ]
-        },
         "max_binlog_dump_events": {
             "cli": "--max-binlog-dump-events=#",
             "default": "0",
@@ -36106,18 +36094,6 @@
             "name": "Tls_library_version",
             "ids": [
                 "41#statvar_Tls_library_version"
-            ]
-        },
-        "OK": {
-            "name": "OK",
-            "ids": [
-                "41#statvar_Innodb_redo_log_resize_status"
-            ]
-        },
-        "Resizing down": {
-            "name": "Resizing down",
-            "ids": [
-                "41#statvar_Innodb_redo_log_resize_status"
             ]
         },
         "group_replication_primary_member": {

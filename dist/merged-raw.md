@@ -37677,26 +37677,6 @@
 |------|----|
 |dev.mysql.com|[sysvar_authentication_ldap_simple_user_search_attr](https://dev.mysql.com/doc/refman/8.0/en/pluggable-authentication-system-variables.html#sysvar_authentication_ldap_simple_user_search_attr)|
 
-## 10.172.166.100
-|name|value|
-|----|-----|
-|Name|`10.172.166.100`|
-
-### Documentation(s)
-|source|anchor name|
-|------|----|
-|dev.mysql.com|[sysvar_authentication_ldap_simple_auth_method_name](https://dev.mysql.com/doc/refman/8.0/en/pluggable-authentication-system-variables.html#sysvar_authentication_ldap_simple_auth_method_name)|
-
-## ldap1.mem.local
-|name|value|
-|----|-----|
-|Name|`ldap1.mem.local`|
-
-### Documentation(s)
-|source|anchor name|
-|------|----|
-|dev.mysql.com|[sysvar_authentication_ldap_simple_auth_method_name](https://dev.mysql.com/doc/refman/8.0/en/pluggable-authentication-system-variables.html#sysvar_authentication_ldap_simple_auth_method_name)|
-
 ## max_binlog_dump_events
 |name|value|
 |----|-----|
@@ -40254,26 +40234,6 @@
 |source|anchor name|
 |------|----|
 |dev.mysql.com|[statvar_Tls_library_version](https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html#statvar_Tls_library_version)|
-
-## OK
-|name|value|
-|----|-----|
-|Name|`OK`|
-
-### Documentation(s)
-|source|anchor name|
-|------|----|
-|dev.mysql.com|[statvar_Innodb_redo_log_resize_status](https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html#statvar_Innodb_redo_log_resize_status)|
-
-## Resizing down
-|name|value|
-|----|-----|
-|Name|`Resizing down`|
-
-### Documentation(s)
-|source|anchor name|
-|------|----|
-|dev.mysql.com|[statvar_Innodb_redo_log_resize_status](https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html#statvar_Innodb_redo_log_resize_status)|
 
 ## group_replication_primary_member
 |name|value|
