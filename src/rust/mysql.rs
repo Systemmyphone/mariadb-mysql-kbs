@@ -359,11 +359,16 @@ fn filter_sublink(elem: &Node) -> bool {
     match elem.find(Name("p")).next() {
         Some(p_elem) => match p_elem.find(Name("code")).next() {
             Some(code) => {
-                let element_attr = code.attr("class");
-                match element_attr {
+                let is_literal = match code.attr("class") {
                     Some(val) => val == "literal",
                     None => false,
-                }
+                };
+                // The <code> must be the whole paragraph, i.e. a bare variable
+                // name such as `<p><code>Com_stmt_prepare</code></p>`. Reject a
+                // literal embedded in a sentence like `<p>... has IP address
+                // <code>10.172.166.100</code>.</p>`, which is an example value
+                // from the description, not a variable.
+                is_literal && p_elem.text().trim() == code.text().trim()
             }
             None => false,
         },
@@ -662,6 +667,23 @@ mod tests {
         let test_dir = env::current_dir().unwrap();
         fs::read_to_string(test_dir.to_str().unwrap().to_owned() + "/src/rust/data/" + file_name)
             .expect("Should have been able to read the test data file")
+    }
+
+    #[test]
+    fn filter_sublink_skips_example_values() {
+        // A bare `<code>` paragraph is a real variable name; a literal embedded
+        // in a sentence is an example value from the description and must be
+        // skipped (regression for `10.172.166.100` / `ldap1.mem.local`).
+        let html = r#"<ul>
+            <li class="listitem"><p><code class="literal">Com_stmt_prepare</code></p></li>
+            <li class="listitem"><p> The name server has IP address <code class="literal">10.172.166.100</code>. </p></li>
+            <li class="listitem"><p> The LDAP servers have names <code class="literal">ldap1.mem.local</code> through <code class="literal">ldap3.mem.local</code></p></li>
+        </ul>"#;
+        let document = Document::from(html);
+        let items: Vec<Node> = document.find(Class("listitem")).collect();
+        assert!(filter_sublink(&items[0]), "bare variable name should be kept");
+        assert!(!filter_sublink(&items[1]), "IP address example should be skipped");
+        assert!(!filter_sublink(&items[2]), "hostname example should be skipped");
     }
 
     #[test]
