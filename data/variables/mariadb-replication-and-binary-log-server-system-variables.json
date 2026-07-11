@@ -131,6 +131,17 @@
       "type": "boolean"
     },
     {
+      "cli": "--binlog-directory=/path/to/dir",
+      "default": "''",
+      "dynamic": false,
+      "id": "binlog_directory",
+      "name": "binlog_directory",
+      "scope": [
+        "global"
+      ],
+      "type": "string"
+    },
+    {
       "cli": "--binlog-do-db=#",
       "default": "NULL",
       "dynamic": false,
@@ -363,7 +374,7 @@
     },
     {
       "cli": "--binlog-storage-engine=name",
-      "default": "OFF",
+      "default": "None",
       "dynamic": false,
       "id": "binlog_storage_engine",
       "name": "binlog_storage_engine",
@@ -446,7 +457,7 @@
     },
     {
       "cli": "--innodb-binlog-state-interval=#",
-      "default": "104857600 (100MB)",
+      "default": "2097152 (2MB)",
       "dynamic": true,
       "id": "innodb_binlog_state_interval",
       "name": "innodb_binlog_state_interval",

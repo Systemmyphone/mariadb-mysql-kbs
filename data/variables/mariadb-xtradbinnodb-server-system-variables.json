@@ -86,7 +86,7 @@
       ]
     },
     {
-      "cli": "--innodb-adaptive-hash-index={0|1}",
+      "cli": "--innodb-adaptive-hash-index[={OFF|ON|IF_SPECIFIED}]",
       "default": "OFF (>= MariaDB 10.5), ON (<= MariaDB 10.4)",
       "dynamic": true,
       "id": "innodb_adaptive_hash_index",
@@ -94,7 +94,12 @@
       "scope": [
         "global"
       ],
-      "type": "boolean"
+      "type": "enumeration",
+      "validValues": [
+        "OFF",
+        "ON",
+        "IF_SPECIFIED"
+      ]
     },
     {
       "cli": "--innodb-adaptive-hash-index-cells=#",
@@ -418,7 +423,7 @@
     {
       "cli": "--innodb-buffer-pool-filename=file",
       "default": "ib_buffer_pool",
-      "dynamic": true,
+      "dynamic": false,
       "id": "innodb_buffer_pool_filename",
       "name": "innodb_buffer_pool_filename",
       "scope": [

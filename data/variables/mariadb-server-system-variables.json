@@ -873,7 +873,7 @@
       "name": "group_concat_max_len",
       "range": {
         "from": 4,
-        "to": 4294967295
+        "to": 1073741824
       },
       "scope": [
         "global",
@@ -1939,9 +1939,6 @@
       "dynamic": true,
       "id": "max_sort_length",
       "name": "max_sort_length",
-      "range": {
-        "to": 8388608
-      },
       "scope": [
         "global",
         "session"
@@ -3597,7 +3594,7 @@
     },
     {
       "cli": "--tmpdir=path,-t path",
-      "default": "$TMPDIR (environment variable) if setotherwise $TEMP if set and on Windowsotherwise $TMP if set and on Windowsotherwise, P_tmpdir (\"/tmp\") or C:\\TEMP (unless overridden during buid time)",
+      "default": "$TMPDIR (environment variable) if setotherwise $TEMP if set and on Windowsotherwise $TMP if set and on Windowsotherwise, P_tmpdir (\"/tmp\") or C:\\TEMP (unless overridden during build time)",
       "dynamic": false,
       "id": "tmpdir",
       "name": "tmpdir",
