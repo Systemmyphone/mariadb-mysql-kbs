@@ -1031,6 +1031,662 @@
     {
       "id": "statvar_Com_xxx",
       "name": "Com_stmt_close"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_admin_commands"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_db"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_db_upgrade"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_event"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_function"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_procedure"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_sequence"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_server"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_tablespace"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_alter_user"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_analyze"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_assign_to_keycache"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_backup"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_backup_lock"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_backup_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_begin"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_binlog"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_call_procedure"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_change_db"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_check"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_checksum"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_commit"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_compound_sql"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_db"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_event"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_function"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_index"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_package"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_package_body"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_procedure"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_role"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_sequence"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_server"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_temporary_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_trigger"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_udf"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_user"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_create_view"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_dealloc_sql"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_delete"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_delete_multi"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_do"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_db"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_event"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_function"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_index"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_package"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_package_body"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_procedure"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_role"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_sequence"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_server"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_temporary_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_trigger"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_user"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_drop_view"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_empty_query"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_execute_immediate"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_execute_sql"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_flush"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_get_diagnostics"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_grant"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_grant_role"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_ha_close"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_ha_open"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_ha_read"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_help"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_insert"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_insert_select"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_install_plugin"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_kill"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_load"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_load_master_data"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_load_master_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_lock_tables"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_multi"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_optimize"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_preload_keys"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_prepare_sql"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_purge"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_purge_before_date"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_release_savepoint"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_rename_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_rename_user"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_repair"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_replace"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_replace_select"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_reset"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_resignal"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_restore_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_revoke"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_revoke_all"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_revoke_grant"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_rollback"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_rollback_to_savepoint"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_savepoint"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_select"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_set_option"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_authors"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_binlog_events"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_binlogs"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_charsets"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_client_statistics"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_collations"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_column_types"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_contributors"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_db"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_event"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_func"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_package"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_package_body"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_proc"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_table"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_trigger"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_create_user"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_databases"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_engine_logs"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_engine_mutex"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_engine_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_errors"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_events"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_explain"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_fields"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_function_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_generic"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_grants"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_index_statistics"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_keys"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_open_tables"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_package_body_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_package_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_plugins"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_privileges"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_procedure_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_processlist"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_profile"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_profiles"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_relaylog_events"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_storage_engines"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_table_statistics"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_table_status"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_tables"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_triggers"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_user_statistics"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_variable"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_show_warnings"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_shutdown"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_signal"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_stmt_reprepare"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_truncate"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_uninstall_plugin"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_unlock_tables"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_update"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_update_multi"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_xa_commit"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_xa_end"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_xa_prepare"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_xa_recover"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_xa_rollback"
+    },
+    {
+      "id": "statvar_Com_xxx",
+      "name": "Com_xa_start"
     }
   ],
   "name": "server-status-variables",
