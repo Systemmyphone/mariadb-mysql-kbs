@@ -7,13 +7,12 @@ use select::{
 use crate::data::{KbParsedEntry, PageProcess, QueryResponse};
 
 pub fn get_pages() -> Vec<PageProcess<'static>> {
-    vec![
-        PageProcess {
-            url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.GlobalStatusVars.html".to_string(),
-            name: "aws-rds-aurora-mysql".to_string(),
-            data_type: "variables",
-        }
-    ]
+    vec![PageProcess {
+        url: "https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Reference.GlobalStatusVars.html"
+            .to_string(),
+        name: "aws-rds-aurora-mysql".to_string(),
+        data_type: "variables",
+    }]
 }
 
 fn process_table_row(tr: Node) -> KbParsedEntry {
@@ -25,7 +24,7 @@ fn process_table_row(tr: Node) -> KbParsedEntry {
     let variable_id: String = row_value.text().trim().to_owned();
 
     KbParsedEntry {
-        has_description: row_description_text.len() > 0,
+        has_description: !row_description_text.is_empty(),
         is_removed: false,
         cli: None,
         default: None,
@@ -47,9 +46,7 @@ fn process_table_row(tr: Node) -> KbParsedEntry {
             d if d.contains("Number of bytes replicated") => Some("byte".to_string()),
             d if d.contains("in bytes") => Some("byte".to_string()),
             d if d.contains("in kilobyte") => Some("integer".to_string()),
-            d if d.contains("The maximum number of parallel query sessions") => {
-                Some("integer".to_string())
-            }
+            d if d.contains("The maximum number of parallel query sessions") => Some("integer".to_string()),
             d if d.contains("The number of times") => Some("integer".to_string()),
             d if d.contains("The number of parallel query requests") => Some("integer".to_string()),
             d if d.contains("The number of parallel query sessions") => Some("integer".to_string()),
@@ -62,13 +59,9 @@ fn process_table_row(tr: Node) -> KbParsedEntry {
             d if d.contains("The number of forwarded queries") => Some("integer".to_string()),
             d if d.contains("The number of forwarded sessions") => Some("integer".to_string()),
             d if d.contains("The total number of SELECT statements") => Some("integer".to_string()),
-            d if d.contains("The total duration of SELECT statements") => {
-                Some("integer".to_string())
-            }
+            d if d.contains("The total duration of SELECT statements") => Some("integer".to_string()),
             d if d.contains("The current number of threads") => Some("integer".to_string()),
-            d if d.contains("enabled or disabled on this DB instance") => {
-                Some("boolean".to_string())
-            }
+            d if d.contains("enabled or disabled on this DB instance") => Some("boolean".to_string()),
             _ => None,
         },
         valid_values: None,
@@ -79,7 +72,6 @@ fn process_table_row(tr: Node) -> KbParsedEntry {
 fn process_table_container(table_container: Node) -> Vec<KbParsedEntry> {
     table_container
         .find(Name("tr"))
-        .into_iter()
         .skip(1) // Skip header row
         .map(|table_row| process_table_row(table_row))
         .collect()
@@ -104,7 +96,7 @@ pub fn extract_aurora_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
         }
         // Move cursor to next and bump count
         node_cur = node_cur.unwrap().next();
-        node_count = node_count - 1;
+        node_count -= 1;
         // If still is None or count too low exit
         if node_cur.is_none() || node_count < 1 {
             break;
@@ -134,9 +126,7 @@ mod tests {
     fn get_test_data(file_name: &str) -> String {
         let test_dir = env::current_dir().unwrap();
         fs::read_to_string(test_dir.to_str().unwrap().to_owned() + "/src/rust/data/" + file_name)
-            .expect(
-                format!("Should have been able to read the test data file: {file_name}").as_str(),
-            )
+            .expect(format!("Should have been able to read the test data file: {file_name}").as_str())
     }
 
     #[test]
@@ -879,9 +869,7 @@ mod tests {
                     cli: None,
                     default: None,
                     dynamic: None,
-                    name: Some(
-                        "Aurora_pq_request_not_chosen_few_pages_outside_buffer_pool".to_string()
-                    ),
+                    name: Some("Aurora_pq_request_not_chosen_few_pages_outside_buffer_pool".to_string()),
                     id: None,
                     range: None,
                     scope: None,

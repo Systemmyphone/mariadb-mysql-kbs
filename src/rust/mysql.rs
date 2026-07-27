@@ -17,7 +17,7 @@ fn find_table_archor(node: Node) -> String {
         }
         // Move cursor to previous and bump count
         node_cur = node_cur.unwrap().prev();
-        node_count = node_count - 1;
+        node_count -= 1;
         // If still is None or count too low exit
         if node_cur.is_none() || node_count < 1 {
             break;
@@ -31,27 +31,20 @@ fn find_table_archor(node: Node) -> String {
 
     let anchor_name_node = collected_p_nodes
         .iter()
-        .filter(|el| el.find(Name("a")).next().is_some())
-        .map(|el| el.find(Name("a")).next().unwrap())
+        .filter_map(|el| el.find(Name("a")).next())
         .find(|el| el.attr("name").is_some() && el.attr("class").is_none());
 
     match anchor_name_node {
         Some(node) => node.attr("name").unwrap().to_string(),
-        None => link_to_archor(
-            node.parent()
-                .expect("Has a parent")
-                .find(Class("link"))
-                .next()
-                .unwrap(),
-        ),
+        None => link_to_archor(node.parent().expect("Has a parent").find(Class("link")).next().unwrap()),
     }
 }
 
 fn link_to_archor(node: Node) -> String {
     node.attr("href")
         .expect("Missing href attr")
-        .split("#")
-        .last()
+        .split('#')
+        .next_back()
         .expect("Anchor to have #")
         .to_string()
 }
@@ -61,9 +54,9 @@ fn scope_from_string(row_value: String) -> Option<Vec<String>> {
     if scope == "both" {
         // found on mysql-cluster-options-variables.html
         return Some(vec!["global".to_string(), "session".to_string()]);
-    } else if scope != "" {
+    } else if !scope.is_empty() {
         let values: Vec<String> = scope
-            .split(",")
+            .split(',')
             .map(|item| {
                 if item.contains("session") {
                     return "session".to_string();
@@ -71,37 +64,31 @@ fn scope_from_string(row_value: String) -> Option<Vec<String>> {
                     return "global".to_string();
                 }
 
-                return item.trim().to_string();
+                item.trim().to_string()
             })
             .collect();
         return Some(values);
     }
-    return None;
+    None
 }
 
-fn process_row_to_entry(
-    row_name: String,
-    row_node: Node,
-    mut entry: KbParsedEntry,
-    table_node: Node,
-) -> KbParsedEntry {
+fn process_row_to_entry(row_name: String, row_node: Node, mut entry: KbParsedEntry, table_node: Node) -> KbParsedEntry {
     let row_value = row_node.text();
     match row_name.as_str() {
         "dynamic" => entry.dynamic = Some(row_value.to_lowercase().trim() == "yes"),
         "name" => entry.name = Some(row_value.trim().to_string()),
-        "system variable" => {
+        "system variable"
             // Do not overwrite the name
-            if entry.name.is_none() {
-                entry.name = Some(row_value.to_lowercase().trim().to_string())
+            if entry.name.is_none() => {
+                entry.name = Some(row_value.to_lowercase().trim().to_string());
             }
-        }
         "type" => {
             entry.r#type = Some(row_value.to_lowercase().trim().to_string());
 
-            if entry.r#type != Some("".to_string()) {
+            if entry.r#type != Some(String::new()) {
                 entry.r#type = cleaner::clean_type(entry.r#type.unwrap());
             }
-            if entry.r#type == Some("".to_string()) {
+            if entry.r#type == Some(String::new()) {
                 entry.r#type = None;
             }
         }
@@ -120,46 +107,29 @@ fn process_row_to_entry(
         }
         "type: default, range" => {
             let text_value_default_range = row_value.trim().to_string();
-            let key = text_value_default_range.split_once(":");
-            let val = text_value_default_range.split_once(":");
-            if key.is_some() {
-                entry.r#type =
-                    cleaner::get_clean_type_from_mixed_string(key.unwrap().0.trim().to_string());
-                if entry.r#type.is_none() {
-                    entry.r#type = None;
-                }
-            }
-            if val.is_some() {
-                entry.default = Some(cleaner::clean_default(val.unwrap().1.trim().to_string()));
-                if entry.default.is_none() {
-                    entry.default = None;
-                }
+            if let Some((type_part, default_part)) = text_value_default_range.split_once(':') {
+                entry.r#type = cleaner::get_clean_type_from_mixed_string(type_part.trim().to_string());
+                entry.default = Some(cleaner::clean_default(default_part.trim().to_string()));
             }
         }
         "minimum value" => {
             entry.init_range();
-            match entry.range {
-                Some(ref mut r) => {
-                    let val = match row_node.find(Name("code")).next() {
-                        Some(code_node) => code_node.text(),
-                        None => row_value.trim().to_string(),
-                    };
-                    r.try_fill_from(val);
-                }
-                None => {}
+            if let Some(ref mut r) = entry.range {
+                let val = match row_node.find(Name("code")).next() {
+                    Some(code_node) => code_node.text(),
+                    None => row_value.trim().to_string(),
+                };
+                r.try_fill_from(val);
             }
         }
         "maximum value" => {
             entry.init_range();
-            match entry.range {
-                Some(ref mut r) => {
-                    let val = match row_node.find(Name("code")).next() {
-                        Some(code_node) => code_node.text(),
-                        None => row_value.trim().to_string(),
-                    };
-                    r.try_fill_to(val);
-                }
-                None => {}
+            if let Some(ref mut r) = entry.range {
+                let val = match row_node.find(Name("code")).next() {
+                    Some(code_node) => code_node.text(),
+                    None => row_value.trim().to_string(),
+                };
+                r.try_fill_to(val);
             }
         }
         "scope" => {
@@ -169,40 +139,27 @@ fn process_row_to_entry(
                 //entry.scope = entry.scope.filter(|e| e == "0" || e.is_some());
             }
         }
-        "command line" => {
+        "command line"
             // Boolean (Yes)
-            if row_value.to_lowercase().trim().to_string() == "yes" {
+            if row_value.to_lowercase().trim() == "yes" => {
                 let link_cli_code_child_cli = table_node
                     .parent()
                     .expect("Has a parent")
-                    .find(Name("a"))
-                    .filter(|e| e.attr("class").is_some() && e.attr("class").unwrap() == "link")
-                    .next();
-                if link_cli_code_child_cli.is_some() {
-                    entry.cli = cleaner::clean_cli(
-                        link_cli_code_child_cli.expect("Has one link").text(),
-                        false,
-                    );
+                    .find(Name("a")).find(|e| e.attr("class").is_some() && e.attr("class").unwrap() == "link");
+                if let Some(link) = link_cli_code_child_cli {
+                    entry.cli = cleaner::clean_cli(link.text(), false);
                 }
 
                 if link_cli_code_child_cli.is_none() || entry.cli.is_none() {
                     let code_child_cli = table_node
                         .parent()
                         .expect("Has a parent")
-                        .find(Name("code"))
-                        .filter(|e| {
-                            e.attr("class").is_some() && e.attr("class").unwrap() == "option"
-                        })
-                        .next();
-                    if code_child_cli.is_some() {
-                        entry.cli = cleaner::clean_cli(
-                            code_child_cli.expect("Has one code tag").text(),
-                            false,
-                        );
+                        .find(Name("code")).find(|e| e.attr("class").is_some() && e.attr("class").unwrap() == "option");
+                    if let Some(code) = code_child_cli {
+                        entry.cli = cleaner::clean_cli(code.text(), false);
                     }
                 }
             }
-        }
         // MariaDB flags removed variables through a "Removed" row (see
         // mariadb.rs); MySQL documents them with a "Deprecated: Yes" (or
         // "Removed") property row. Wire both into is_removed the same way.
@@ -219,10 +176,7 @@ fn process_row_to_entry(
 }
 
 fn process_sublink(li_node: Node, parent_anchor: Option<String>) -> KbParsedEntry {
-    let name = match li_node.find(Name("code")).next() {
-        Some(node) => Some(node.text()),
-        None => None,
-    };
+    let name = li_node.find(Name("code")).next().map(|node| node.text());
     KbParsedEntry {
         has_description: false,
         is_removed: false,
@@ -245,21 +199,14 @@ fn process_link(li_node: Node) -> KbParsedEntry {
         cli: None,
         default: None,
         dynamic: None,
-        id: match li_node.find(Class("link")).next() {
-            Some(node) => Some(link_to_archor(node)),
-            None => None,
-        },
-        name: match li_node.find(Class("link")).next() {
-            Some(node) => Some(
-                match node.text().split("=").next() {
-                    Some(data) => data.trim().to_string(),
-                    None => node.text().trim().to_string(),
-                }
-                .replace("\n", "")
-                .replace(" ", ""),
-            ),
-            None => None,
-        },
+        id: li_node.find(Class("link")).next().map(link_to_archor),
+        name: li_node.find(Class("link")).next().map(|node| {
+            match node.text().split('=').next() {
+                Some(data) => data.trim().to_string(),
+                None => node.text().trim().to_string(),
+            }
+            .replace(['\n', ' '], "")
+        }),
         scope: None,
         r#type: None,
         valid_values: None,
@@ -277,16 +224,13 @@ fn process_summary_table_row(row_node: Node) -> KbParsedEntry {
         default: None,
         dynamic: None,
         // TODO: link is on another page: summary pages
-        id: match row_node.find(Class("link")).next() {
-            Some(node) => Some(link_to_archor(node)),
-            None => None,
-        },
-        name: match row_node.find(Name("th")).next() {
-            Some(th_node) => Some(th_node.text().trim().to_string()),
-            None => None,
-        },
+        id: row_node.find(Class("link")).next().map(link_to_archor),
+        name: row_node
+            .find(Name("th"))
+            .next()
+            .map(|th_node| th_node.text().trim().to_string()),
         r#type: match row_data.next() {
-            Some(th_node) => cleaner::clean_type(th_node.text().trim().to_lowercase().to_string()),
+            Some(th_node) => cleaner::clean_type(th_node.text().trim().to_lowercase()),
             None => None,
         },
         scope: match row_data.next() {
@@ -315,40 +259,36 @@ fn process_table(table_node: Node) -> KbParsedEntry {
 
     for tbody in table_node.find(Name("tbody")) {
         for tr in tbody.find(Name("tr")) {
-            match tr.find(Name("td")).into_selection().len() == 1
-                && tr.find(Name("th")).into_selection().len() == 1
-            {
-                // It is a mix of a th for the header and a td for the data
-                true => {
-                    let row_name: String = tr
-                        .find(Name("th"))
-                        .next()
-                        .expect("Node to exist")
-                        .text()
-                        .to_lowercase()
-                        .trim()
-                        .to_owned();
-                    let row_value: Node = tr.find(Name("td")).next().expect("Node to exist");
-                    entry = process_row_to_entry(row_name, row_value, entry, table_node);
-                }
-                false => {
-                    let mut tds = tr.find(Name("td"));
-                    let row_name: String = tds
-                        .next()
-                        .expect("Node to exist")
-                        .text()
-                        .to_lowercase()
-                        .trim()
-                        .to_owned();
-                    let row_value: Node = tds.next().expect("Node to exist");
-                    entry = process_row_to_entry(row_name, row_value, entry, table_node);
-                }
+            if tr.find(Name("td")).into_selection().len() == 1 && tr.find(Name("th")).into_selection().len() == 1 {
+                let row_name: String = tr
+                    .find(Name("th"))
+                    .next()
+                    .expect("Node to exist")
+                    .text()
+                    .to_lowercase()
+                    .trim()
+                    .to_owned();
+                let row_value: Node = tr.find(Name("td")).next().expect("Node to exist");
+                entry = process_row_to_entry(row_name, row_value, entry, table_node);
+            } else {
+                let mut tds = tr.find(Name("td"));
+                let row_name: String = tds
+                    .next()
+                    .expect("Node to exist")
+                    .text()
+                    .to_lowercase()
+                    .trim()
+                    .to_owned();
+                let row_value: Node = tds.next().expect("Node to exist");
+                entry = process_row_to_entry(row_name, row_value, entry, table_node);
             }
         }
     }
 
-    if entry.name.is_none() && entry.cli.is_some() {
-        entry.name = cleaner::transform_cli_into_name(entry.cli.as_ref().unwrap().to_string());
+    if entry.name.is_none() {
+        if let Some(cli) = entry.cli.clone() {
+            entry.name = cleaner::transform_cli_into_name(cli);
+        }
     }
 
     /*
@@ -433,19 +373,22 @@ fn filter_summary_table(elem: &Node) -> bool {
 fn filter_table(elem: &Node) -> bool {
     let element_attr = elem.attr("class");
     match element_attr {
-        Some(attr) => match attr == "informaltable" {
-            true => match elem.find(Name("table")).next() {
-                Some(table) => match table.attr("summary") {
-                    Some(attr) => attr.contains("Properties for"),
+        Some(attr) => {
+            if attr == "informaltable" {
+                match elem.find(Name("table")).next() {
+                    Some(table) => match table.attr("summary") {
+                        Some(attr) => attr.contains("Properties for"),
+                        None => false,
+                    },
                     None => false,
-                },
-                None => false,
-            },
-            false => match elem.find(Name("th")).next() {
-                Some(e) => e.text() == "Property",
-                None => false,
-            },
-        },
+                }
+            } else {
+                match elem.find(Name("th")).next() {
+                    Some(e) => e.text() == "Property",
+                    None => false,
+                }
+            }
+        }
         None => false,
     }
 }
@@ -456,7 +399,7 @@ fn dedup_entries(v: &mut Vec<KbParsedEntry>) {
     // Will retain when it returns true
     // HashSet.insert returns false when the value already exists
     v.retain(|e| match &e.name {
-        Some(data) => set.insert(data.to_string()),
+        Some(data) => set.insert(data.clone()),
         None => false,
     });
 }
@@ -476,11 +419,11 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
                 .map(|li_node| process_link(li_node))
                 .filter(|e| e.name.is_some())
                 .filter(|e| match &e.name {
-                    Some(name) => name.starts_with("--") == false,
+                    Some(name) => !name.starts_with("--"),
                     None => false,
                 })
                 .filter(|e| match &e.id {
-                    Some(id) => id.contains(".html") == false,
+                    Some(id) => !id.contains(".html"),
                     None => false,
                 }),
         )
@@ -494,18 +437,12 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
                         .next()
                         .and_then(|p_node| {
                             p_node.find(Name("a")).find(|a| {
-                                a.attr("name").map_or(false, |n| {
-                                    n.starts_with("statvar_") || n.starts_with("sysvar_")
-                                })
+                                a.attr("name")
+                                    .is_some_and(|n| n.starts_with("statvar_") || n.starts_with("sysvar_"))
                             })
                         })
-                        .and_then(|a| a.attr("name").map(|s| s.to_string()))
-                        .or_else(|| {
-                            li_node
-                                .find(Class("link"))
-                                .next()
-                                .map(|n| link_to_archor(n))
-                        });
+                        .and_then(|a| a.attr("name").map(std::string::ToString::to_string))
+                        .or_else(|| li_node.find(Class("link")).next().map(|n| link_to_archor(n)));
                     li_node
                         .find(Class("listitem"))
                         .filter(|li_node| filter_sublink(li_node))
@@ -516,8 +453,7 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
         .chain(
             match &mut document
                 .find(Class("table-contents"))
-                .filter(|table_node| filter_summary_table(table_node))
-                .next()
+                .find(|table_node| filter_summary_table(table_node))
             {
                 Some(table) => match table.find(Name("tbody")).next() {
                     Some(tbody) => tbody
@@ -786,11 +722,7 @@ mod tests {
                     name: Some("enforce_gtid_consistency".to_string()),
                     scope: Some(vec!["global".to_string()]),
                     r#type: Some("enumeration".to_string()),
-                    valid_values: Some(vec![
-                        "OFF".to_string(),
-                        "ON".to_string(),
-                        "WARN".to_string()
-                    ]),
+                    valid_values: Some(vec!["OFF".to_string(), "ON".to_string(), "WARN".to_string()]),
                     range: None,
                 },
                 KbParsedEntry {
@@ -1219,8 +1151,10 @@ mod tests {
                     cli: Some("--ndb-recv-thread-activation-threshold=threshold".to_string()),
                     dynamic: Some(false),
                     r#type: Some("integer".to_string()),
-                    default:
-                    Some("8 / 0 (MIN_ACTIVATION_THRESHOLD) - 16, (MAX_ACTIVATION_THRESHOLD) (Version: NDB 7.5-7.6)".to_string()),
+                    default: Some(
+                        "8 / 0 (MIN_ACTIVATION_THRESHOLD) - 16, (MAX_ACTIVATION_THRESHOLD) (Version: NDB 7.5-7.6)"
+                            .to_string()
+                    ),
                     valid_values: None,
                     range: None,
                     scope: None,

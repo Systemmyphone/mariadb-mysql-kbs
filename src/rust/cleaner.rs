@@ -19,28 +19,24 @@ const REAL_TYPES: [&str; 9] = [
 pub fn clean_type(type_str: String) -> Option<String> {
     if type_str == "bool" {
         return Some("boolean".to_string());
-    } else if type_str == "varchar" || type_str == "text" {
+    } else if type_str == "varchar"
+        || type_str == "text"
+        || type_str == "ip address"
+        || type_str == "datetime"
+        // ndb_recv_thread_cpu_mask documents itself as "Bitmap" but its on-disk
+        // form is a comma-separated CPU-mask string (e.g. "0-3,5").
+        || type_str == "bitmap"
+    {
         return Some("string".to_string());
     } else if type_str == "filename" {
         return Some("file name".to_string());
     } else if type_str == "double" {
         return Some("numeric".to_string());
-    } else if type_str == "ip address" {
-        return Some("string".to_string());
-    } else if type_str == "datetime" {
-        return Some("string".to_string());
-    } else if type_str == "bigint unsigned"
-        || type_str == "int unsigned"
-        || type_str == "unsigned long"
-    {
+    } else if type_str == "bigint unsigned" || type_str == "int unsigned" || type_str == "unsigned long" {
         return Some("integer".to_string());
-    } else if type_str == "bitmap" {
-        // MySQL's ndb_recv_thread_cpu_mask documents itself as "Bitmap" but
-        // its on-disk form is a comma-separated CPU-mask string (e.g. "0-3,5").
-        return Some("string".to_string());
     }
 
-    if REAL_TYPES.into_iter().find(|t| t.to_string() == type_str) == None {
+    if !REAL_TYPES.into_iter().any(|t| t == type_str) {
         if type_str.contains("in bytes")
             || type_str.contains("number of bytes")
             || type_str.contains("size in mb")
@@ -70,14 +66,12 @@ pub fn clean_type(type_str: String) -> Option<String> {
             return Some("directory name".to_string());
         } else if type_str.contains("filename") {
             return Some("file name".to_string());
-        } else if type_str.ends_with("unused.") || type_str.contains("unused since") {
-            return None;
-        } else if type_str.ends_with("removed.") {
+        } else if type_str.ends_with("unused.") || type_str.contains("unused since") || type_str.ends_with("removed.") {
             return None;
         }
 
-        if type_str.len() < 30 && type_str.len() > 0 {
-            eprintln!("not known type: {}", type_str);
+        if type_str.len() < 30 && !type_str.is_empty() {
+            eprintln!("not known type: {type_str}");
         }
 
         return None;
@@ -86,13 +80,10 @@ pub fn clean_type(type_str: String) -> Option<String> {
 }
 
 pub fn get_clean_type_from_mixed_string(mixed_string: String) -> Option<String> {
-    match REAL_TYPES
+    REAL_TYPES
         .into_iter()
         .find(|real_type_to_test| mixed_string.contains(real_type_to_test))
-    {
-        Some(val) => Some(val.to_string()),
-        None => None,
-    }
+        .map(std::string::ToString::to_string)
 }
 
 const REGEX_CLI: &str = r"(?i)([-]{2})([0-9a-z-_]+)";
@@ -101,10 +92,7 @@ pub fn transform_cli_into_name(cli: String) -> Option<String> {
     let regex_cli = Regex::new(REGEX_CLI).expect("regex should compile");
 
     let matches = regex_cli.captures(&cli);
-    match matches {
-        Some(cap) => Some(cap.get(2).unwrap().as_str().replace("-", "_")),
-        None => None,
-    }
+    matches.map(|cap| cap.get(2).unwrap().as_str().replace('-', "_"))
 }
 
 /**
@@ -117,12 +105,12 @@ pub fn clean_cli(mut cli: String, skip_regex: bool) -> Option<String> {
     if cli.contains("<code>") || cli.contains("</code>") {
         cli = cli.replace("<code>", "");
         cli = cli.replace("</code>", "");
-        cli = cli.replace(">", "");
-        cli = cli.replace("<", "");
+        cli = cli.replace('>', "");
+        cli = cli.replace('<', "");
     }
 
     let regex_cli = Regex::new(REGEX_CLI).expect("regex should compile");
-    if skip_regex == false && regex_cli.is_match(&cli) == false {
+    if !skip_regex && !regex_cli.is_match(&cli) {
         return None;
     }
 
@@ -134,8 +122,8 @@ pub fn clean_cli(mut cli: String, skip_regex: bool) -> Option<String> {
  * @param {Object} range The range object
  * @return {Object} The cleaned range object
  */
-pub fn clean_range(range: Option<String>) -> Option<String> {
-    if range != None {
+pub const fn clean_range(range: Option<String>) -> Option<String> {
+    if range.is_some() {
         // clean range
         // TODO: re-implement
         /*if (typeof range.from != "number" || isNaN(range.from)) {
@@ -147,7 +135,7 @@ pub fn clean_range(range: Option<String>) -> Option<String> {
             delete range.to;
         }*/
     }
-    return range;
+    range
 }
 
 /**
@@ -157,10 +145,10 @@ pub fn clean_range(range: Option<String>) -> Option<String> {
  */
 pub fn clean_default(default_value: String) -> String {
     let values: Vec<String> = default_value
-        .split("\n")
+        .split('\n')
         .map(|el| clean_text_default(el.to_string().trim().to_string()))
         .collect();
-    return values.join(", ");
+    values.join(", ")
 }
 
 /**
@@ -185,15 +173,13 @@ pub fn clean_text_default(default_text_value: String) -> String {
     if default_text_value == "The MariaDB data directory" {
         return "(the MariaDB data directory)".to_string();
     }
-    if default_text_value.contains("-1 (signifies (autoscaling); do not assign this literal value)")
-    {
+    if default_text_value.contains("-1 (signifies (autoscaling); do not assign this literal value)") {
         return "(-1 signifies autoscaling; do not use -1)".to_string();
     }
-    if default_text_value.contains("-1 (signifies (autosizing); do not assign this literal value)")
-    {
+    if default_text_value.contains("-1 (signifies (autosizing); do not assign this literal value)") {
         return "(-1 signifies autosizing; do not use -1)".to_string();
     }
-    return default_text_value;
+    default_text_value
 }
 
 /**
@@ -219,9 +205,9 @@ pub fn clean_range_from_to(default_text_value: String) -> String {
             .to_string();
     }
     if default_text_value.contains('(') && default_text_value.contains(')') {
-        eprintln!("dtv: {}", default_text_value);
+        eprintln!("dtv: {default_text_value}");
     }
-    return default_text_value.trim().to_string();
+    default_text_value.trim().to_string()
 }
 
 /**
@@ -230,7 +216,7 @@ pub fn clean_range_from_to(default_text_value: String) -> String {
 pub fn is_valid_default(text_value: &str) -> bool {
     let regex_with_comment = Regex::new(r".^* \([a-z0-9A-Z -]+\)$").expect("regex should compile");
     let regex_space = Regex::new(r": [0-9]+$").expect("regex should compile");
-    return regex_with_comment.is_match(&text_value) || regex_space.is_match(&text_value);
+    regex_with_comment.is_match(text_value) || regex_space.is_match(text_value)
 }
 
 /**
@@ -241,7 +227,7 @@ pub fn clean_text_valid_values(valid_values_text: String) -> String {
         .expect("regex should compile")
         .is_match(&valid_values_text)
     {
-        return "".to_string();
+        return String::new();
     }
     if Regex::new(r"^.* or .*$")
         .expect("regex should compile")
@@ -250,9 +236,9 @@ pub fn clean_text_valid_values(valid_values_text: String) -> String {
         return valid_values_text.replace(" or ", ",");
     }
     if valid_values_text == "See description" {
-        return "".to_string();
+        return String::new();
     }
-    return valid_values_text;
+    valid_values_text
 }
 
 #[cfg(test)]
@@ -551,36 +537,24 @@ mod tests {
     #[test]
     fn clean_type_unsigned_long() {
         // MySQL audit-log-reference exposes some vars as "Type: Unsigned Long".
-        assert_eq!(
-            clean_type("unsigned long".to_string()),
-            Some("integer".to_string()),
-        );
+        assert_eq!(clean_type("unsigned long".to_string()), Some("integer".to_string()),);
     }
 
     #[test]
     fn clean_type_bigint_unsigned() {
-        assert_eq!(
-            clean_type("bigint unsigned".to_string()),
-            Some("integer".to_string()),
-        );
+        assert_eq!(clean_type("bigint unsigned".to_string()), Some("integer".to_string()),);
     }
 
     #[test]
     fn clean_type_int_unsigned() {
-        assert_eq!(
-            clean_type("int unsigned".to_string()),
-            Some("integer".to_string()),
-        );
+        assert_eq!(clean_type("int unsigned".to_string()), Some("integer".to_string()),);
     }
 
     #[test]
     fn clean_type_bitmap() {
         // MySQL ndb_recv_thread_cpu_mask is documented as "Type: Bitmap" but
         // its value is a comma-separated CPU-mask string like "0-3,5".
-        assert_eq!(
-            clean_type("bitmap".to_string()),
-            Some("string".to_string()),
-        );
+        assert_eq!(clean_type("bitmap".to_string()), Some("string".to_string()),);
     }
 
     #[test]
@@ -643,8 +617,7 @@ mod tests {
 
     #[test]
     fn get_clean_text_vie_valid_values_non_valid_value_dataset_2() {
-        let cleaned_value =
-            clean_text_valid_values("See alter_algorithm for the full list.".to_string());
+        let cleaned_value = clean_text_valid_values("See alter_algorithm for the full list.".to_string());
         assert_eq!(cleaned_value, "");
     }
 
@@ -756,24 +729,17 @@ mod tests {
                 continue;
             }
             let raw = std::fs::read_to_string(&path).unwrap();
-            let v: serde_json::Value = serde_json::from_str(&raw)
-                .unwrap_or_else(|e| panic!("invalid JSON in {}: {}", path.display(), e));
+            let v: serde_json::Value =
+                serde_json::from_str(&raw).unwrap_or_else(|e| panic!("invalid JSON in {}: {}", path.display(), e));
             let Some(arr) = v.get("data").and_then(|d| d.as_array()) else {
                 continue;
             };
             for item in arr {
-                let has_cli_or_default =
-                    item.get("cli").is_some() || item.get("default").is_some();
+                let has_cli_or_default = item.get("cli").is_some() || item.get("default").is_some();
                 let has_type = item.get("type").is_some();
-                let is_removed = item
-                    .get("isRemoved")
-                    .and_then(|b| b.as_bool())
-                    .unwrap_or(false);
+                let is_removed = item.get("isRemoved").and_then(|b| b.as_bool()).unwrap_or(false);
                 if has_cli_or_default && !has_type && !is_removed {
-                    let name = item
-                        .get("name")
-                        .and_then(|n| n.as_str())
-                        .unwrap_or("<unnamed>");
+                    let name = item.get("name").and_then(|n| n.as_str()).unwrap_or("<unnamed>");
                     missing.push(format!("{}: {}", path.file_name().unwrap().to_string_lossy(), name));
                 }
             }

@@ -6,7 +6,8 @@ use std::{env, fs};
 use ureq::{Agent, Error, ResponseExt};
 
 const UA_FROM: &str = "williamdes+mariadb-mysql-kbs@wdes.fr";
-const UA: &str = "mariadb-mysql-kbs-bot (+https://github.com/williamdes/mariadb-mysql-kbs; williamdes+mariadb-mysql-kbs@wdes.fr)";
+const UA: &str =
+    "mariadb-mysql-kbs-bot (+https://github.com/williamdes/mariadb-mysql-kbs; williamdes+mariadb-mysql-kbs@wdes.fr)";
 // dev.mysql.com 403s custom bot User-Agents, so present a browser there only.
 const UA_BROWSER: &str = "Mozilla/5.0 (X11; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0";
 
@@ -26,12 +27,7 @@ pub enum ExtractionPreference {
 pub fn extract(only: ExtractionPreference) {
     println!("Run build...");
     let pages: Vec<PageProcess> = match only {
-        ExtractionPreference::All => [
-            mysql::get_pages(),
-            aurora_mysql::get_pages(),
-            mariadb::get_pages(),
-        ]
-        .concat(),
+        ExtractionPreference::All => [mysql::get_pages(), aurora_mysql::get_pages(), mariadb::get_pages()].concat(),
         ExtractionPreference::MySQL => mysql::get_pages(),
         ExtractionPreference::AuroraMySQL => aurora_mysql::get_pages(),
         ExtractionPreference::MariaDB => mariadb::get_pages(),
@@ -70,15 +66,12 @@ pub fn get_html_from_url(agent: Agent, url: &str) -> Result<QueryResponse, Query
     match request.call() {
         Ok(mut response) => Ok(QueryResponse {
             url: response.get_uri().to_string(),
-            body: response
-                .body_mut()
-                .read_to_string()
-                .expect("Should have text"),
+            body: response.body_mut().read_to_string().expect("Should have text"),
         }),
         Err(Error::StatusCode(code)) => Err(QueryErrorResponse {
             url: Some(url.to_string()),
             code: Some(code),
-            message: "".to_string(),
+            message: String::new(),
         }),
         Err(err) => Err(QueryErrorResponse {
             url: None,
@@ -101,9 +94,7 @@ fn extract_page(page: PageProcess) {
                 data: match page.get_data_type() {
                     ExtractionType::MariaDB => mariadb::extract_mariadb_from_text(response),
                     ExtractionType::MySQL => mysql::extract_mysql_from_text(response),
-                    ExtractionType::AuroraMySQL => {
-                        aurora_mysql::extract_aurora_mysql_from_text(response)
-                    }
+                    ExtractionType::AuroraMySQL => aurora_mysql::extract_aurora_mysql_from_text(response),
                 },
                 url: final_url.as_str(),
                 name: &page.name,
@@ -115,7 +106,7 @@ fn extract_page(page: PageProcess) {
                 "URL : {} ended in {} ({})",
                 &page.url,
                 err.code.unwrap_or(0),
-                err.url.unwrap_or("".to_string())
+                err.url.unwrap_or(String::new())
             );
         }
     }

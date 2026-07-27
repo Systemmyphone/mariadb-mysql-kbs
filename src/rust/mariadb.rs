@@ -325,8 +325,7 @@ fn split_key_value_no_strong(li_text: &str) -> Option<(String, String)> {
         return Some((k.trim().to_string(), v.trim().to_string()));
     }
     for key in KNOWN_FIELD_KEYS {
-        if li_text.starts_with(key) {
-            let rest = &li_text[key.len()..];
+        if let Some(rest) = li_text.strip_prefix(key) {
             // The key must be followed by whitespace or end-of-text — otherwise
             // we'd e.g. match "Range" against "RangeFoo".
             if rest.is_empty() || rest.starts_with(|c: char| c.is_whitespace()) {
@@ -339,32 +338,29 @@ fn split_key_value_no_strong(li_text: &str) -> Option<(String, String)> {
 
 fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
     let li_text: String = li_node.text();
-    let (mut key_name, row_value): (String, String) =
-        match li_node.find(Name("strong")).next() {
-            // Legacy KB format: <strong>Key:</strong> value
-            Some(strong) => {
-                let k = strong.text();
-                let v = li_text
-                    .split_once(k.as_str())
-                    .map(|x| x.1.trim().to_string())
-                    .unwrap_or_default();
-                (k, v)
-            }
-            // New docs (GitBook) format: <p>Key: value</p>
-            None => match split_key_value_no_strong(li_text.trim()) {
-                Some(kv) => kv,
-                None => return entry,
-            },
-        };
+    let (mut key_name, row_value): (String, String) = match li_node.find(Name("strong")).next() {
+        // Legacy KB format: <strong>Key:</strong> value
+        Some(strong) => {
+            let k = strong.text();
+            let v = li_text
+                .split_once(k.as_str())
+                .map(|x| x.1.trim().to_string())
+                .unwrap_or_default();
+            (k, v)
+        }
+        // New docs (GitBook) format: <p>Key: value</p>
+        None => match split_key_value_no_strong(li_text.trim()) {
+            Some(kv) => kv,
+            None => return entry,
+        },
+    };
 
-    key_name = key_name.to_lowercase().replace(":", "").trim().to_string();
+    key_name = key_name.to_lowercase().replace(':', "").trim().to_string();
 
     match key_name.as_str() {
         "dynamic" | "access type" => {
-            entry.dynamic = Some(
-                row_value.to_lowercase() == "yes"
-                    || row_value.to_lowercase() == "can be changed dynamically",
-            );
+            entry.dynamic =
+                Some(row_value.to_lowercase() == "yes" || row_value.to_lowercase() == "can be changed dynamically");
         }
         "data type" | "type" => {
             if li_node.find(Name("code")).count() == 1 {
@@ -386,10 +382,10 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                 entry.r#type = Some("integer".to_string());
             }
 
-            if entry.r#type != Some("".to_string()) {
+            if entry.r#type != Some(String::new()) {
                 entry.r#type = cleaner::clean_type(entry.r#type.unwrap());
             }
-            if entry.r#type == Some("".to_string()) {
+            if entry.r#type == Some(String::new()) {
                 entry.r#type = None;
             }
             if entry.r#type == Some("numeric".to_string()) {
@@ -397,17 +393,9 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
             }
         }
         "default value" | "default" | "default value - 64 bit" => {
-            if li_node.find(Name("code")).count() == 1
-                && cleaner::is_valid_default(row_value.as_ref())
-            {
+            if li_node.find(Name("code")).count() == 1 && cleaner::is_valid_default(row_value.as_ref()) {
                 entry.default = Some(cleaner::clean_default(
-                    li_node
-                        .find(Name("code"))
-                        .next()
-                        .unwrap()
-                        .text()
-                        .trim()
-                        .to_string(),
+                    li_node.find(Name("code")).next().unwrap().text().trim().to_string(),
                 ));
             } else {
                 entry.default = Some(cleaner::clean_default(row_value));
@@ -443,7 +431,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                 for c in &codes {
                     leftover = leftover.replacen(c, "", 1);
                 }
-                let leftover_has_text = leftover.chars().any(|c| c.is_alphanumeric());
+                let leftover_has_text = leftover.chars().any(char::is_alphanumeric);
 
                 let raw = if has_nested_ul && !leftover_has_text {
                     codes.join(",")
@@ -465,33 +453,27 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                     }
                 };
                 let lc = raw.to_lowercase();
-                let cleaned = if lc == "no"
-                    || lc == "none"
-                    || lc == "n/a"
-                    || lc == "no commandline option"
-                {
+                let cleaned = if lc == "no" || lc == "none" || lc == "n/a" || lc == "no commandline option" {
                     None
                 } else {
                     cleaner::clean_cli(raw, true)
                 };
                 entry.cli = cleaned.filter(|c| !c.is_empty());
-            } else {
-                if row_value.to_lowercase() != "no"
-                    && row_value.to_lowercase() != "none"
-                    && row_value.to_lowercase() != "n/a"
-                    && row_value.to_lowercase() != "no commandline option"
-                {
-                    entry.cli = cleaner::clean_cli(row_value, true);
-                }
+            } else if row_value.to_lowercase() != "no"
+                && row_value.to_lowercase() != "none"
+                && row_value.to_lowercase() != "n/a"
+                && row_value.to_lowercase() != "no commandline option"
+            {
+                entry.cli = cleaner::clean_cli(row_value, true);
             }
         }
 
         "scope" => {
             let scope = row_value.to_lowercase().trim().to_string();
-            if scope != "" {
+            if !scope.is_empty() {
                 let values: Vec<String> = scope
-                    .split(",")
-                    .map(|item| item.to_lowercase())
+                    .split(',')
+                    .map(str::to_lowercase)
                     .filter(|item| item.contains("session") || item.contains("global"))
                     .map(|item| {
                         if item.contains("session") {
@@ -500,7 +482,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                             return "global".to_string();
                         }
 
-                        return "".to_string();
+                        String::new()
                     })
                     .collect();
                 entry.scope = Some(values);
@@ -522,7 +504,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                     let t = t.trim();
                     KNOWN_FIELD_KEYS
                         .iter()
-                        .any(|k| t.starts_with(k) && t[k.len()..].starts_with(|c: char| c == ':'))
+                        .any(|k| t.starts_with(k) && t[k.len()..].starts_with(':'))
                 })
             });
             if li_node.find(Name("code")).next().is_some() && !misnested_fields {
@@ -543,23 +525,15 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                 entry.valid_values = Some(values);
             } else if !misnested_fields {
                 let clean_value = cleaner::clean_text_valid_values(row_value.trim().to_string());
-                if clean_value != "" {
-                    entry.valid_values = Some(
-                        clean_value
-                            .split(',')
-                            .map(|el| el.trim().to_string())
-                            .collect(),
-                    );
+                if !clean_value.is_empty() {
+                    entry.valid_values = Some(clean_value.split(',').map(|el| el.trim().to_string()).collect());
                 }
             }
         }
         "minimum value" => {
             entry.init_range();
-            match entry.range {
-                Some(ref mut r) => {
-                    r.try_fill_from(row_value);
-                }
-                None => {}
+            if let Some(ref mut r) = entry.range {
+                r.try_fill_from(row_value);
             }
         }
         "range" | "range - 64 bit" | "range - 64-bit" | "range - 64bit" | "range (windows)" => {
@@ -573,48 +547,36 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                     if first_value.contains('-') {
                         // try x-y
                         entry.init_range();
-                        match entry.range {
-                            Some(ref mut r) => {
-                                let range = first_value.split_once('-').unwrap();
+                        if let Some(ref mut r) = entry.range {
+                            let range = first_value.split_once('-').unwrap();
 
-                                r.try_fill_from(range.0.to_string());
-                                r.try_fill_to(range.1.to_string());
-                            }
-                            None => {}
+                            r.try_fill_from(range.0.to_string());
+                            r.try_fill_to(range.1.to_string());
                         }
                     }
                     if first_value.contains("to") {
                         // try x to y
                         entry.init_range();
-                        match entry.range {
-                            Some(ref mut r) => {
-                                let range = first_value.split_once("to").unwrap();
+                        if let Some(ref mut r) = entry.range {
+                            let range = first_value.split_once("to").unwrap();
 
-                                r.try_fill_from(range.0.to_string());
-                                r.try_fill_to(range.1.to_string());
-                            }
-                            None => {}
+                            r.try_fill_from(range.0.to_string());
+                            r.try_fill_to(range.1.to_string());
                         }
                     }
                     if li_node.text().contains("upwards") {
                         // try x upwards
                         entry.init_range();
-                        match entry.range {
-                            Some(ref mut r) => {
-                                r.try_fill_from(first_value.to_string());
-                                r.to_upwards = Some("upwards".to_string());
-                            }
-                            None => {}
+                        if let Some(ref mut r) = entry.range {
+                            r.try_fill_from(first_value.clone());
+                            r.to_upwards = Some("upwards".to_string());
                         }
                     }
                 } else if values.len() == 2 {
                     entry.init_range();
-                    match entry.range {
-                        Some(ref mut r) => {
-                            r.try_fill_from(values.first().unwrap().to_string());
-                            r.try_fill_to(values.last().unwrap().to_string());
-                        }
-                        None => {}
+                    if let Some(ref mut r) = entry.range {
+                        r.try_fill_from(values.first().unwrap().clone());
+                        r.try_fill_to(values.last().unwrap().clone());
                     }
                 } else if values.len() == 4 {
                     // from <code>0</code> to <code>16</code> (version x.y.z)
@@ -623,22 +585,16 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
                     // "from" values are equal
                     if values.first() == values.get(2) {
                         entry.init_range();
-                        match entry.range {
-                            Some(ref mut r) => {
-                                r.try_fill_from(values.first().unwrap().to_string());
-                            }
-                            None => {}
+                        if let Some(ref mut r) = entry.range {
+                            r.try_fill_from(values.first().unwrap().clone());
                         }
                     }
 
                     // "to" values are equal
                     if values.last() == values.get(1) {
                         entry.init_range();
-                        match entry.range {
-                            Some(ref mut r) => {
-                                r.try_fill_to(values.last().unwrap().to_string());
-                            }
-                            None => {}
+                        if let Some(ref mut r) = entry.range {
+                            r.try_fill_to(values.last().unwrap().clone());
                         }
                     }
                 } else {
@@ -677,7 +633,7 @@ fn process_li(mut entry: KbParsedEntry, li_node: Node) -> KbParsedEntry {
         | "windows"
         | "notes" => {}
         _key => {
-            eprintln!("missing: {} -> {}", key_name, row_value);
+            eprintln!("missing: {key_name} -> {row_value}");
         }
     }
 
@@ -690,7 +646,7 @@ fn process_ul(mut entry: KbParsedEntry, ul_node: Node) -> KbParsedEntry {
         .find(Name("li"))
         // Only direct <li> children of this <ul> — exclude nested lists,
         // which will be recursed into below.
-        .filter(|li| li.parent().map(|p| p.index() == ul_index).unwrap_or(false));
+        .filter(|li| li.parent().is_some_and(|p| p.index() == ul_index));
 
     for li in li_nodes {
         entry = process_li(entry, li);
@@ -698,10 +654,7 @@ fn process_ul(mut entry: KbParsedEntry, ul_node: Node) -> KbParsedEntry {
         // The new docs site sometimes nests subsequent fields (e.g. Default
         // Value, Range) inside the <ul> that visually follows "Valid Values:".
         // Recurse so we still pick those fields up at this entry's level.
-        for nested in li
-            .find(Name("ul"))
-            .filter(|n| n.find(Name("li")).next().is_some())
-        {
+        for nested in li.find(Name("ul")).filter(|n| n.find(Name("li")).next().is_some()) {
             entry = process_ul(entry, nested);
         }
     }
@@ -743,7 +696,7 @@ fn process_block(header_node: Node) -> KbParsedEntry {
         }
         // Move cursor to previous and bump count
         node_cur = node_cur.unwrap().next();
-        node_count = node_count - 1;
+        node_count -= 1;
         // If still is None or count too low exit
         if node_cur.is_none() || node_count < 1 {
             break;
@@ -763,12 +716,10 @@ fn process_block(header_node: Node) -> KbParsedEntry {
             // tabbed widget (e.g. innodb_doublewrite has a "Current" tab and
             // a "< MariaDB 11.0.6" tab). Walk into the div and process any
             // <ul> that looks like a field list.
-            for inner_ul in n.find(Name("ul")).filter(|u| {
-                u.find(Name("li"))
-                    .next()
-                    .map(|li| !li.text().trim().is_empty())
-                    .unwrap_or(false)
-            }) {
+            for inner_ul in n
+                .find(Name("ul"))
+                .filter(|u| u.find(Name("li")).next().is_some_and(|li| !li.text().trim().is_empty()))
+            {
                 entry = process_ul(entry, inner_ul);
             }
         }
@@ -792,10 +743,7 @@ pub fn extract_mariadb_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
         .filter(|elem| elem.attr("id").is_some())
         // Handle an edge case for https://mariadb.com/kb/en/temporal-data-tables/
         .filter(|elem| elem.text().trim() != "SELECT" && elem.attr("id").unwrap() != "select")
-        .filter(|elem| {
-            elem.text().trim() != "system-variables"
-                && elem.attr("id").unwrap() != "system-variables"
-        })
+        .filter(|elem| elem.text().trim() != "system-variables" && elem.attr("id").unwrap() != "system-variables")
         .map(|header_node| process_block(header_node))
         .filter(|entry| {
             entry.r#type.is_some()
@@ -1187,10 +1135,7 @@ mod tests {
                 has_description: true,
                 is_removed: false,
                 cli: Some("--lock-wait-timeout=#".to_string()),
-                default: Some(
-                    "86400 (1 day) >= MariaDB 10.2.4, , 31536000 (1 year) <= MariaDB 10.2.3"
-                        .to_string()
-                ),
+                default: Some("86400 (1 day) >= MariaDB 10.2.4, , 31536000 (1 year) <= MariaDB 10.2.3".to_string()),
                 dynamic: Some(true),
                 id: Some("lock_wait_timeout".to_string()),
                 name: Some("lock_wait_timeout".to_string()),
@@ -1518,9 +1463,7 @@ mod tests {
             vec![KbParsedEntry {
                 has_description: true,
                 is_removed: false,
-                cli: Some(
-                    "--wsrep-debug[={NONE|SERVER|TRANSACTION|STREAMING|CLIENT}]".to_string(),
-                ),
+                cli: Some("--wsrep-debug[={NONE|SERVER|TRANSACTION|STREAMING|CLIENT}]".to_string(),),
                 default: Some("NONE (>= MariaDB 10.4.3),  OFF (<= MariaDB 10.4.2)".to_string()),
                 dynamic: Some(true),
                 id: Some("wsrep_debug".to_string()),
@@ -1551,18 +1494,12 @@ mod tests {
     #[test]
     fn strip_trailing_paren_note_keeps_inline_paren_syntax() {
         // No leading space before "(" → it's part of the flag's own syntax.
-        assert_eq!(
-            strip_trailing_paren_note("--option(arg)"),
-            "--option(arg)"
-        );
+        assert_eq!(strip_trailing_paren_note("--option(arg)"), "--option(arg)");
     }
 
     #[test]
     fn strip_trailing_paren_note_no_trailing_paren_is_noop() {
-        assert_eq!(
-            strip_trailing_paren_note("--wsrep-sync-wait=#"),
-            "--wsrep-sync-wait=#"
-        );
+        assert_eq!(strip_trailing_paren_note("--wsrep-sync-wait=#"), "--wsrep-sync-wait=#");
     }
 
     #[test]

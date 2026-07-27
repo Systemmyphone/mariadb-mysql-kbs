@@ -40,8 +40,14 @@ jobs:
                   profile: minimal
                   toolchain: ${{ env.RUST_TOOLCHAIN }}
                   # LLVM tools is for coverage
-                  components: llvm-tools
+                  components: llvm-tools, clippy, rustfmt
                   default: true
+            - name: Check formatting
+              run: cargo fmt --all -- --check
+            - name: Clippy
+              # Lint levels come from Cargo.toml [lints]: clippy `all` and
+              # unsafe_code are denied (fail CI); pedantic/nursery stay warnings.
+              run: cargo clippy --all-targets --all-features
             - name: Build
               uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
               with:

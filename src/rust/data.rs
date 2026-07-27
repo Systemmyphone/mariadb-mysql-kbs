@@ -22,14 +22,14 @@ impl PageProcess<'_> {
     pub fn is_mysql_aurora_page(&self) -> bool {
         self.url.contains("docs.aws.amazon.com")
     }
-    pub fn get_data_prefix(&self) -> &str {
+    pub fn get_data_prefix(&self) -> &'static str {
         if self.is_mariadb_page() {
             return "mariadb-";
         }
         if self.is_mysql_aurora_page() {
             return "mysql-aurora-";
         }
-        return "mysql-";
+        "mysql-"
     }
 
     pub fn get_data_type(&self) -> ExtractionType {
@@ -39,7 +39,7 @@ impl PageProcess<'_> {
         if self.is_mysql_aurora_page() {
             return ExtractionType::AuroraMySQL;
         }
-        return ExtractionType::MySQL;
+        ExtractionType::MySQL
     }
 }
 
@@ -73,10 +73,11 @@ impl Range {
         val = cleaner::clean_range_from_to(val);
         match val.parse::<i128>() {
             Ok(v) => self.from = Some(v),
-            _ => match val.parse::<f64>() {
-                Ok(v) => self.from_f = Some(v),
-                _ => {}
-            },
+            _ => {
+                if let Ok(v) = val.parse::<f64>() {
+                    self.from_f = Some(v)
+                }
+            }
         }
     }
 
@@ -84,10 +85,11 @@ impl Range {
         val = cleaner::clean_range_from_to(val);
         match val.parse::<i128>() {
             Ok(v) => self.to = Some(v),
-            _ => match val.parse::<f64>() {
-                Ok(v) => self.to_f = Some(v),
-                _ => {}
-            },
+            _ => {
+                if let Ok(v) = val.parse::<f64>() {
+                    self.to_f = Some(v)
+                }
+            }
         }
     }
 }
@@ -132,7 +134,7 @@ impl KbParsedEntry {
     }
 }
 
-pub fn skip_serialize_range(data: &std::option::Option<Range>) -> bool {
+pub const fn skip_serialize_range(data: &std::option::Option<Range>) -> bool {
     if data.is_none() {
         return true;
     }
@@ -144,7 +146,7 @@ pub fn skip_serialize_range(data: &std::option::Option<Range>) -> bool {
     {
         return false;
     }
-    return true;
+    true
 }
 
 #[derive(Serialize)]

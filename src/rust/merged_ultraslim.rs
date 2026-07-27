@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 
-#[derive(Deserialize_repr, PartialEq)]
+#[derive(Deserialize_repr, PartialEq, Eq)]
 #[repr(u8)]
 pub enum DataType {
     MySQL = 1,
@@ -36,7 +36,7 @@ pub struct MergedUltraSlim {
     pub var_types: HashMap<usize, String>,
 }
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SearchType {
     Any = -1,
     MySQL = 1,
@@ -48,29 +48,21 @@ pub enum SearchType {
 pub struct SearchError {}
 
 impl MergedUltraSlim {
-    pub fn get_by_name(
-        &self,
-        variable_name: &str,
-        search_type: SearchType,
-    ) -> Result<String, SearchError> {
+    pub fn get_by_name(&self, variable_name: &str, search_type: SearchType) -> Result<String, SearchError> {
         let kb_entry = self.get_variable(variable_name);
         match kb_entry {
             Ok(entry) => {
                 let found = entry.a.iter().find(|link| {
                     (search_type == SearchType::Any)
-                        | (search_type == SearchType::MySQL && link.t == DataType::MySQL)
-                        | (search_type == SearchType::MariaDB && link.t == DataType::MariaDB)
+                        || (search_type == SearchType::MySQL && link.t == DataType::MySQL)
+                        || (search_type == SearchType::MariaDB && link.t == DataType::MariaDB)
                 });
                 match found {
                     Some(link) => Ok(match &link.a {
-                        Some(anchor) => format!(
-                            "{}#{}",
-                            self.urls.get(link.u).expect("Url to exist in table"),
-                            anchor,
-                        ),
-                        None => {
-                            format!("{}", self.urls.get(link.u).expect("Url to exist in table"),)
+                        Some(anchor) => {
+                            format!("{}#{}", self.urls.get(link.u).expect("Url to exist in table"), anchor)
                         }
+                        None => self.urls.get(link.u).expect("Url to exist in table").clone(),
                     }),
                     None => Err(SearchError {}),
                 }

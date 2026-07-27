@@ -17,7 +17,7 @@ pub fn run(only: ExtractionPreference) {
         ExtractionPreference::MariaDB => {
             check_mariadb();
         }
-    };
+    }
 
     println!("All done.");
     println!("End !");
@@ -37,17 +37,16 @@ fn check_mariadb_url(url: &str) {
 
     match get_html_from_url(agent, url) {
         Ok(response) => {
-            println!("Checking URL: {}", url);
+            println!("Checking URL: {url}");
             let data = mariadb::extract_mariadb_from_text(response);
             let loaded_data = search::load_data();
             for entry in data {
-                if entry.name.is_some() {
-                    let entry_name = entry.name.unwrap();
+                if let Some(entry_name) = entry.name {
                     match loaded_data.get_by_name(&entry_name, SearchType::MariaDB) {
                         Ok(_) => {}
                         Err(_) => {
                             if !entry_name.starts_with("--") {
-                                println!("Missing: {:?}", entry_name);
+                                println!("Missing: {entry_name:?}");
                             }
                         }
                     }
@@ -59,7 +58,7 @@ fn check_mariadb_url(url: &str) {
                 "URL : {} ended in {} ({})",
                 url,
                 err.code.unwrap_or(0),
-                err.url.unwrap_or("".to_string())
+                err.url.unwrap_or(String::new())
             );
         }
     }

@@ -1,3 +1,7 @@
+// Test modules are mostly large literal fixtures/assertions; relax the style
+// lints there while keeping production code strict.
+#![cfg_attr(test, allow(clippy::all, clippy::pedantic, clippy::nursery))]
+
 pub mod aurora_mysql;
 pub mod cleaner;
 pub mod data;
