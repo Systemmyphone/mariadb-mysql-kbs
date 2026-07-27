@@ -89,26 +89,28 @@ class Search
     {
         self::loadData();
         $kbEntries = self::getVariable($name);
-        if (isset($kbEntries->a)) {
-            foreach ($kbEntries->a as $kbEntry) {
+        if (isset($kbEntries->a) && is_array($kbEntries->a)) {
+            /** @var array<int, object{a?: string, t: int, u: int}> $entries */
+            $entries = $kbEntries->a;
+            /** @var array<int, string> $urls */
+            $urls = Search::$data->urls;
+            foreach ($entries as $kbEntry) {
                 $urlEnd = isset($kbEntry->a) ? '#' . $kbEntry->a : '';
+                $url    = $urls[$kbEntry->u] . $urlEnd;
 
                 if ($type === Search::ANY) {
-                    return Search::$data->urls[$kbEntry->u] . $urlEnd;
+                    return $url;
                 } elseif ($type === Search::MYSQL) {
-                    if ($kbEntry->t === Search::MYSQL) {
-                        return Search::$data->urls[$kbEntry->u] . $urlEnd;
-                    }
-                    if ($kbEntry->t === Search::AURORA_MYSQL) {
-                        return Search::$data->urls[$kbEntry->u] . $urlEnd;
+                    if ($kbEntry->t === Search::MYSQL || $kbEntry->t === Search::AURORA_MYSQL) {
+                        return $url;
                     }
                 } elseif ($type === Search::MARIADB) {
                     if ($kbEntry->t === Search::MARIADB) {
-                        return Search::$data->urls[$kbEntry->u] . $urlEnd;
+                        return $url;
                     }
                 } elseif ($type === Search::AURORA_MYSQL) {
                     if ($kbEntry->t === Search::AURORA_MYSQL) {
-                        return Search::$data->urls[$kbEntry->u] . $urlEnd;
+                        return $url;
                     }
                 }
             }
@@ -127,8 +129,10 @@ class Search
     public static function getVariable(string $name): stdClass
     {
         self::loadData();
-        if (isset(Search::$data->vars->{$name})) {
-            return Search::$data->vars->{$name};
+        /** @var stdClass $vars */
+        $vars = Search::$data->vars;
+        if (isset($vars->{$name}) && $vars->{$name} instanceof stdClass) {
+            return $vars->{$name};
         } else {
             throw new KBException($name . ' does not exist !');
         }
@@ -146,7 +150,13 @@ class Search
         self::loadData();
         $kbEntry = self::getVariable($name);
         if (isset($kbEntry->t)) {
-            return Search::$data->varTypes->{$kbEntry->t};
+            /** @var stdClass $varTypes */
+            $varTypes = Search::$data->varTypes;
+            /** @var int $typeIndex */
+            $typeIndex = $kbEntry->t;
+            /** @var string $variableType */
+            $variableType = $varTypes->{$typeIndex};
+            return $variableType;
         } else {
             throw new KBException($name . ' does have a known type !');
         }
@@ -182,7 +192,9 @@ class Search
     {
         self::loadData();
         $staticVars = [];
-        foreach (Search::$data->vars as $name => $var) {
+        /** @var array<string, stdClass> $vars */
+        $vars = (array) Search::$data->vars;
+        foreach ($vars as $name => $var) {
             if (isset($var->d)) {
                 if ($var->d === $dynamic) {
                     $staticVars[] = $name;

@@ -17,6 +17,8 @@ on:
 env:
     NODE_VERSION: 22
     PHP_VERSION: 7.2
+    # PHPStan 2 requires PHP >= 7.4, so analyse on a modern PHP
+    PHPSTAN_PHP_VERSION: "8.4"
 
 jobs:
     lint-node:
@@ -75,10 +77,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
-            - name: Use php ${{ env.PHP_VERSION }}
+            - name: Use php ${{ env.PHPSTAN_PHP_VERSION }}
               uses: shivammathur/setup-php@v2
               with:
-                  php-version: ${{ env.PHP_VERSION }}
+                  php-version: ${{ env.PHPSTAN_PHP_VERSION }}
             - name: Cache module
               uses: actions/cache@v5
               with:

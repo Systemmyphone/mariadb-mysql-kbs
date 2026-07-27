@@ -98,8 +98,7 @@ class SlimData extends stdClass implements JsonSerializable
      * Used for json_encode function
      * This can seem useless, do not remove it.
      *
-     * @phpstan-ignore-next-line
-     * @return array<string,array|float|stdClass>
+     * @return array<string, array<string>|float|stdClass>
      */
     public function jsonSerialize(): array
     {

@@ -38,7 +38,7 @@ class DataTest extends TestCase
     {
         if (class_exists(Schema::class)) {
             // tests that depend on the vendor can be run
-            $this->assertTrue(true);
+            $this->assertTrue(true);// @phpstan-ignore method.alreadyNarrowedType
         } else {
             $this->markTestSkipped('vnf');
         }
