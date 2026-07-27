@@ -404,6 +404,183 @@ fn dedup_entries(v: &mut Vec<KbParsedEntry>) {
     });
 }
 
+/// The per-statement `Com_xxx` status counters. MySQL documents them
+/// collectively under the single `statvar_Com_xxx` anchor (issue #351), so
+/// we emit one entry per counter pointing at that anchor. List sourced from
+/// the MariaDB status-variables reference (the counter set is shared).
+const COM_STATUS_VARIABLE_NAMES: [&str; 170] = [
+    "Com_admin_commands",
+    "Com_alter_db",
+    "Com_alter_db_upgrade",
+    "Com_alter_event",
+    "Com_alter_function",
+    "Com_alter_procedure",
+    "Com_alter_sequence",
+    "Com_alter_server",
+    "Com_alter_table",
+    "Com_alter_tablespace",
+    "Com_alter_user",
+    "Com_analyze",
+    "Com_assign_to_keycache",
+    "Com_backup",
+    "Com_backup_lock",
+    "Com_backup_table",
+    "Com_begin",
+    "Com_binlog",
+    "Com_call_procedure",
+    "Com_change_db",
+    "Com_check",
+    "Com_checksum",
+    "Com_commit",
+    "Com_compound_sql",
+    "Com_create_db",
+    "Com_create_event",
+    "Com_create_function",
+    "Com_create_index",
+    "Com_create_package",
+    "Com_create_package_body",
+    "Com_create_procedure",
+    "Com_create_role",
+    "Com_create_sequence",
+    "Com_create_server",
+    "Com_create_table",
+    "Com_create_temporary_table",
+    "Com_create_trigger",
+    "Com_create_udf",
+    "Com_create_user",
+    "Com_create_view",
+    "Com_dealloc_sql",
+    "Com_delete",
+    "Com_delete_multi",
+    "Com_do",
+    "Com_drop_db",
+    "Com_drop_event",
+    "Com_drop_function",
+    "Com_drop_index",
+    "Com_drop_package",
+    "Com_drop_package_body",
+    "Com_drop_procedure",
+    "Com_drop_role",
+    "Com_drop_sequence",
+    "Com_drop_server",
+    "Com_drop_table",
+    "Com_drop_temporary_table",
+    "Com_drop_trigger",
+    "Com_drop_user",
+    "Com_drop_view",
+    "Com_empty_query",
+    "Com_execute_immediate",
+    "Com_execute_sql",
+    "Com_flush",
+    "Com_get_diagnostics",
+    "Com_grant",
+    "Com_grant_role",
+    "Com_ha_close",
+    "Com_ha_open",
+    "Com_ha_read",
+    "Com_help",
+    "Com_insert",
+    "Com_insert_select",
+    "Com_install_plugin",
+    "Com_kill",
+    "Com_load",
+    "Com_load_master_data",
+    "Com_load_master_table",
+    "Com_lock_tables",
+    "Com_multi",
+    "Com_optimize",
+    "Com_preload_keys",
+    "Com_prepare_sql",
+    "Com_purge",
+    "Com_purge_before_date",
+    "Com_release_savepoint",
+    "Com_rename_table",
+    "Com_rename_user",
+    "Com_repair",
+    "Com_replace",
+    "Com_replace_select",
+    "Com_reset",
+    "Com_resignal",
+    "Com_restore_table",
+    "Com_revoke",
+    "Com_revoke_all",
+    "Com_revoke_grant",
+    "Com_rollback",
+    "Com_rollback_to_savepoint",
+    "Com_savepoint",
+    "Com_select",
+    "Com_set_option",
+    "Com_show_authors",
+    "Com_show_binlog_events",
+    "Com_show_binlogs",
+    "Com_show_charsets",
+    "Com_show_client_statistics",
+    "Com_show_collations",
+    "Com_show_column_types",
+    "Com_show_contributors",
+    "Com_show_create_db",
+    "Com_show_create_event",
+    "Com_show_create_func",
+    "Com_show_create_package",
+    "Com_show_create_package_body",
+    "Com_show_create_proc",
+    "Com_show_create_table",
+    "Com_show_create_trigger",
+    "Com_show_create_user",
+    "Com_show_databases",
+    "Com_show_engine_logs",
+    "Com_show_engine_mutex",
+    "Com_show_engine_status",
+    "Com_show_errors",
+    "Com_show_events",
+    "Com_show_explain",
+    "Com_show_fields",
+    "Com_show_function_status",
+    "Com_show_generic",
+    "Com_show_grants",
+    "Com_show_index_statistics",
+    "Com_show_keys",
+    "Com_show_open_tables",
+    "Com_show_package_body_status",
+    "Com_show_package_status",
+    "Com_show_plugins",
+    "Com_show_privileges",
+    "Com_show_procedure_status",
+    "Com_show_processlist",
+    "Com_show_profile",
+    "Com_show_profiles",
+    "Com_show_relaylog_events",
+    "Com_show_status",
+    "Com_show_storage_engines",
+    "Com_show_table_statistics",
+    "Com_show_table_status",
+    "Com_show_tables",
+    "Com_show_triggers",
+    "Com_show_user_statistics",
+    "Com_show_variable",
+    "Com_show_warnings",
+    "Com_shutdown",
+    "Com_signal",
+    "Com_stmt_close",
+    "Com_stmt_execute",
+    "Com_stmt_fetch",
+    "Com_stmt_prepare",
+    "Com_stmt_reprepare",
+    "Com_stmt_reset",
+    "Com_stmt_send_long_data",
+    "Com_truncate",
+    "Com_uninstall_plugin",
+    "Com_unlock_tables",
+    "Com_update",
+    "Com_update_multi",
+    "Com_xa_commit",
+    "Com_xa_end",
+    "Com_xa_prepare",
+    "Com_xa_recover",
+    "Com_xa_rollback",
+    "Com_xa_start",
+];
+
 pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
     let document = Document::from(qr.body.as_str());
 
@@ -468,6 +645,29 @@ pub fn extract_mysql_from_text(qr: QueryResponse) -> Vec<KbParsedEntry> {
             },
         )
         .collect::<Vec<KbParsedEntry>>();
+
+    // MySQL lists the per-statement Com_xxx counters collectively under one
+    // `statvar_Com_xxx` anchor, so consumers cannot resolve e.g.
+    // `Com_show_open_tables` and fall back to a 404 (issue #351). Emit an entry
+    // per counter pointing at that shared anchor; dedup keeps any already
+    // captured from the page's sublinks.
+    if qr.url.contains("server-status-variables") {
+        for name in COM_STATUS_VARIABLE_NAMES {
+            final_data.push(KbParsedEntry {
+                has_description: false,
+                is_removed: false,
+                cli: None,
+                default: None,
+                dynamic: None,
+                id: Some("statvar_Com_xxx".to_string()),
+                name: Some((*name).to_string()),
+                scope: None,
+                r#type: None,
+                valid_values: None,
+                range: None,
+            });
+        }
+    }
 
     dedup_entries(&mut final_data);
     final_data
@@ -650,6 +850,26 @@ mod tests {
             .find(|e| e.name.as_deref() == Some("authentication_fido_rp_id"))
             .expect("variable extracted");
         assert!(e.is_removed, "Deprecated: Yes should set is_removed");
+    }
+
+    #[test]
+    fn com_status_variables_injected_for_status_page() {
+        let entries = extract_mysql_from_text(QueryResponse {
+            body: "<html></html>".to_string(),
+            url: "https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html".to_string(),
+        });
+        let com = entries
+            .iter()
+            .find(|e| e.name.as_deref() == Some("Com_show_open_tables"))
+            .expect("Com_show_open_tables should be injected");
+        assert_eq!(com.id.as_deref(), Some("statvar_Com_xxx"));
+
+        // Not injected on unrelated pages
+        let others = extract_mysql_from_text(QueryResponse {
+            body: "<html></html>".to_string(),
+            url: "https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html".to_string(),
+        });
+        assert!(others.iter().all(|e| e.name.as_deref() != Some("Com_show_open_tables")));
     }
 
     #[test]
@@ -1498,7 +1718,9 @@ mod tests {
     fn test_case_10() {
         let entries = extract_mysql_from_text(QueryResponse {
             body: get_test_data("mysql_test_case_10.html"),
-            url: "https://dev.mysql.com/doc/refman/8.0/en/server-status-variables.html#statvar_Com_xxx".to_string(),
+            // Neutral URL: this case exercises the HTML sublink parsing only;
+            // the Com_xxx injection is URL-triggered and covered separately.
+            url: "https://example.com/status-variables.html".to_string(),
         });
         assert_eq!(
             vec![
