@@ -19,8 +19,7 @@ permissions:
     contents: read
 
 env:
-    GRCOV_VERSION: 0.10.5
-    RUST_TOOLCHAIN: stable
+    GRCOV_VERSION: "0.10.5"
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,15 +32,13 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v6
-            - name: Set up toolchain
-              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
+            - name: Install Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
               with:
-                  command: install-rustup
-                  profile: minimal
-                  toolchain: ${{ env.RUST_TOOLCHAIN }}
-                  # LLVM tools is for coverage
-                  components: llvm-tools, clippy, rustfmt
-                  default: true
+                  # llvm-tools is for coverage
+                  components: clippy, rustfmt, llvm-tools
+            - name: Cache cargo artifacts
+              uses: Swatinem/rust-cache@v2
             - name: Check formatting
               run: cargo fmt --all -- --check
             - name: Clippy
@@ -49,21 +46,13 @@ jobs:
               # unsafe_code are denied (fail CI); pedantic/nursery stay warnings.
               run: cargo clippy --all-targets --all-features
             - name: Build
-              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
-              with:
-                  command: cargo build
-                  toolchain: ${{ env.RUST_TOOLCHAIN }}
-                  args: --release
+              run: cargo build --release
               env:
                   CARGO_INCREMENTAL: "0"
                   RUSTFLAGS: "-Cinstrument-coverage"
                   RUSTDOCFLAGS: "-Cinstrument-coverage"
             - name: Test
-              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
-              with:
-                  command: cargo test
-                  toolchain: ${{ env.RUST_TOOLCHAIN }}
-                  args: --all-features --no-fail-fast
+              run: cargo test --all-features --no-fail-fast
               env:
                   CARGO_INCREMENTAL: "0"
                   RUSTFLAGS: "-Cinstrument-coverage"
