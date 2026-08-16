@@ -41,11 +41,11 @@ mod tests {
             data.get_by_name("server_id", SearchType::MySQL).unwrap().as_str()
         );
         assert_eq!(
-            "https://mariadb.com/kb/en/gtid/#server_id",
+            "https://mariadb.com/docs/server/ha-and-performance/standard-replication/gtid#server_id",
             data.get_by_name("server_id", SearchType::MariaDB).unwrap().as_str()
         );
         assert_eq!(
-            "https://mariadb.com/kb/en/gtid/#server_id",
+            "https://mariadb.com/docs/server/ha-and-performance/standard-replication/gtid#server_id",
             data.get_by_name("server_id", SearchType::Any).unwrap().as_str()
         );
     }
