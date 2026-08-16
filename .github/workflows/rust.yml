@@ -20,6 +20,9 @@ permissions:
 
 env:
     GRCOV_VERSION: "0.10.5"
+    # Pin the toolchain so a new stable's clippy lints cannot break CI
+    # unexpectedly (bump deliberately). Must stay >= the Cargo.toml MSRV.
+    RUST_VERSION: "1.95.0"
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,6 +38,7 @@ jobs:
             - name: Install Rust toolchain
               uses: dtolnay/rust-toolchain@stable
               with:
+                  toolchain: ${{ env.RUST_VERSION }}
                   # llvm-tools is for coverage
                   components: clippy, rustfmt, llvm-tools
             - name: Cache cargo artifacts

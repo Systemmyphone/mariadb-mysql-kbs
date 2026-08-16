@@ -89,7 +89,7 @@ fn extract_page(page: PageProcess) {
     match get_html_from_url(agent, &page.url) {
         Ok(response) => {
             let final_url = response.url.clone();
-            println!("URL : {} -> {}", &page.url, final_url);
+            println!("URL : {} -> {}", page.url, final_url);
             let data = DataFile {
                 data: match page.get_data_type() {
                     ExtractionType::MariaDB => mariadb::extract_mariadb_from_text(response),
@@ -104,7 +104,7 @@ fn extract_page(page: PageProcess) {
         Err(err) => {
             eprintln!(
                 "URL : {} ended in {} ({})",
-                &page.url,
+                page.url,
                 err.code.unwrap_or(0),
                 err.url.unwrap_or(String::new())
             );
