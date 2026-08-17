@@ -90,12 +90,22 @@ fn extract_page(page: PageProcess) {
         Ok(response) => {
             let final_url = response.url.clone();
             println!("URL : {} -> {}", page.url, final_url);
+            let entries = match page.get_data_type() {
+                ExtractionType::MariaDB => mariadb::extract_mariadb_from_text(response),
+                ExtractionType::MySQL => mysql::extract_mysql_from_text(response),
+                ExtractionType::AuroraMySQL => aurora_mysql::extract_aurora_mysql_from_text(response),
+            };
+            // A variable page never legitimately has zero entries: an empty
+            // result means the page was removed/moved/redirected (e.g. the
+            // retired TokuDB/Cassandra docs, which now redirect to a landing
+            // page) or the fetch was blocked. Keep the existing committed data
+            // rather than overwriting it with nothing.
+            if entries.is_empty() {
+                eprintln!("SKIP : {} produced 0 entries; keeping existing data", page.url);
+                return;
+            }
             let data = DataFile {
-                data: match page.get_data_type() {
-                    ExtractionType::MariaDB => mariadb::extract_mariadb_from_text(response),
-                    ExtractionType::MySQL => mysql::extract_mysql_from_text(response),
-                    ExtractionType::AuroraMySQL => aurora_mysql::extract_aurora_mysql_from_text(response),
-                },
+                data: entries,
                 url: final_url.as_str(),
                 name: &page.name,
             };
