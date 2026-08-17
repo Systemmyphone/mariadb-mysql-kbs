@@ -74,5 +74,6 @@
     }
   ],
   "name": "cassandra-status-variables",
+  "removed": true,
   "url": "https://mariadb.com/docs/server/server-usage/storage-engines/legacy-storage-engines/cassandra/cassandra-status-variables"
 }

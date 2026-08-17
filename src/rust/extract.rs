@@ -1,6 +1,6 @@
 use crate::data::{DataFile, PageProcess, QueryErrorResponse, QueryResponse};
 use crate::{aurora_mysql, mariadb, mysql};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use std::{env, fs};
 use ureq::{Agent, Error, ResponseExt};
@@ -34,6 +34,11 @@ pub fn extract(only: ExtractionPreference) {
     };
 
     for page in pages {
+        let path = data_file_path(page.data_type, page.get_data_prefix(), &page.name);
+        if is_source_removed(&path) {
+            println!("SKIP : {} is marked removed upstream; not browsing it", page.url);
+            continue;
+        }
         extract_page(page);
     }
     println!("All done.");
@@ -101,7 +106,11 @@ fn extract_page(page: PageProcess) {
             // page) or the fetch was blocked. Keep the existing committed data
             // rather than overwriting it with nothing.
             if entries.is_empty() {
-                eprintln!("SKIP : {} produced 0 entries; keeping existing data", page.url);
+                eprintln!(
+                    "SKIP : {} produced 0 entries; marking source removed and keeping existing data",
+                    page.url
+                );
+                mark_source_removed(&data_file_path(page.data_type, page.get_data_prefix(), &page.name));
                 return;
             }
             let data = DataFile {
@@ -132,16 +141,56 @@ fn write_json(filename: String, data: DataFile) {
     fs::write(filename, data).expect("Unable to write file");
 }
 
-fn write_page(data_type: &str, file_prefix: &str, data: DataFile) {
+fn data_file_path(data_type: &str, file_prefix: &str, name: &str) -> String {
     let current_dir = env::current_dir().unwrap();
-    write_json(
-        format!(
-            "{}/data/{}/{}{}.json",
-            current_dir.to_str().unwrap().to_owned(),
-            data_type,
-            file_prefix,
-            data.name
-        ),
-        data,
-    );
+    format!(
+        "{}/data/{}/{}{}.json",
+        current_dir.to_str().unwrap().to_owned(),
+        data_type,
+        file_prefix,
+        name
+    )
+}
+
+fn write_page(data_type: &str, file_prefix: &str, data: DataFile) {
+    write_json(data_file_path(data_type, file_prefix, data.name), data);
+}
+
+/// Partial view of a data file, used to read the `removed` marker without
+/// deserializing the whole payload.
+#[derive(Deserialize)]
+struct DataFileFlags {
+    #[serde(default)]
+    removed: bool,
+}
+
+/// Whether a page's data file is already flagged as removed upstream, so it
+/// should no longer be fetched.
+fn is_source_removed(path: &str) -> bool {
+    fs::read_to_string(path)
+        .ok()
+        .and_then(|contents| serde_json::from_str::<DataFileFlags>(&contents).ok())
+        .is_some_and(|flags| flags.removed)
+}
+
+/// Flag a page's data file as removed upstream while preserving its existing
+/// entries. The retired data is kept and the page is skipped on later runs.
+fn mark_source_removed(path: &str) {
+    let Ok(contents) = fs::read_to_string(path) else {
+        // No existing data file to preserve, nothing to mark.
+        return;
+    };
+    let Ok(mut value) = serde_json::from_str::<serde_json::Value>(&contents) else {
+        return;
+    };
+    if let Some(object) = value.as_object_mut() {
+        object.insert("removed".to_string(), serde_json::Value::Bool(true));
+    }
+    let buf = Vec::new();
+    let formatter = serde_json::ser::PrettyFormatter::with_indent(b"  ");
+    let mut ser = serde_json::Serializer::with_formatter(buf, formatter);
+    value.serialize(&mut ser).expect("Unable to serialize data");
+    let mut out = ser.into_inner();
+    out.push(0x0a); // LF
+    fs::write(path, out).expect("Unable to write file");
 }
